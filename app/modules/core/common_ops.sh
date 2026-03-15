@@ -166,13 +166,13 @@ proxy_run_with_spinner() {
         return $?
     fi
 
-    local -a spinner=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+    local -a _breath=( '\033[38;5;240m' '\033[38;5;243m' '\033[38;5;246m' '\033[38;5;249m' '\033[38;5;252m' '\033[38;5;255m' '\033[38;5;252m' '\033[38;5;249m' '\033[38;5;246m' '\033[38;5;243m' )
     "$@" >"$tmp_out" 2>"$tmp_err" &
     pid=$!
     while kill -0 "$pid" 2>/dev/null; do
-        printf '\r\033[K  %s %s' "${spinner[$spin_idx]}" "$message" > /dev/tty
-        spin_idx=$(( (spin_idx + 1) % ${#spinner[@]} ))
-        sleep 0.08
+        printf '\r\033[K  %b●\033[0m %s' "${_breath[$spin_idx]}" "$message" > /dev/tty
+        spin_idx=$(( (spin_idx + 1) % ${#_breath[@]} ))
+        sleep 0.12
     done
     wait "$pid" || rc=$?
     printf '\r\033[K' > /dev/tty
@@ -202,13 +202,13 @@ proxy_run_with_spinner_compact() {
         return $?
     fi
 
-    local -a spinner=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+    local -a _breath=( '\033[38;5;240m' '\033[38;5;243m' '\033[38;5;246m' '\033[38;5;249m' '\033[38;5;252m' '\033[38;5;255m' '\033[38;5;252m' '\033[38;5;249m' '\033[38;5;246m' '\033[38;5;243m' )
     "$@" >"$tmp_out" 2>"$tmp_err" &
     pid=$!
     while kill -0 "$pid" 2>/dev/null; do
-        printf '\r\033[K%s %s' "${spinner[$spin_idx]}" "$message" > /dev/tty
-        spin_idx=$(( (spin_idx + 1) % ${#spinner[@]} ))
-        sleep 0.08
+        printf '\r\033[K%b●\033[0m %s' "${_breath[$spin_idx]}" "$message" > /dev/tty
+        spin_idx=$(( (spin_idx + 1) % ${#_breath[@]} ))
+        sleep 0.12
     done
     wait "$pid" || rc=$?
     printf '\r\033[K' > /dev/tty
@@ -230,13 +230,13 @@ proxy_run_with_spinner_fg() {
         return $?
     fi
 
-    local -a spinner=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+    local -a _breath=( '\033[38;5;240m' '\033[38;5;243m' '\033[38;5;246m' '\033[38;5;249m' '\033[38;5;252m' '\033[38;5;255m' '\033[38;5;252m' '\033[38;5;249m' '\033[38;5;246m' '\033[38;5;243m' )
     (
         local spin_idx=0
         while true; do
-            printf '\r\033[K%s %s' "${spinner[$spin_idx]}" "$message" > /dev/tty
-            spin_idx=$(( (spin_idx + 1) % ${#spinner[@]} ))
-            sleep 0.08
+            printf '\r\033[K%b●\033[0m %s' "${_breath[$spin_idx]}" "$message" > /dev/tty
+            spin_idx=$(( (spin_idx + 1) % ${#_breath[@]} ))
+            sleep 0.12
         done
     ) &
     spinner_pid=$!

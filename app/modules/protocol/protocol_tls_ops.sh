@@ -488,7 +488,7 @@ wait_for_tls_certificate_file() {
     [[ -n "$cert_path" ]] || return 1
     domain="$(basename "${cert_path%.crt}")"
 
-    local -a spinner=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+    local -a _breath=( '\033[38;5;240m' '\033[38;5;243m' '\033[38;5;246m' '\033[38;5;249m' '\033[38;5;252m' '\033[38;5;255m' '\033[38;5;252m' '\033[38;5;249m' '\033[38;5;246m' '\033[38;5;243m' )
     local spin_idx=0
 
     yellow "证书入口已启动，证书申请中..." >&2
@@ -504,8 +504,8 @@ wait_for_tls_certificate_file() {
             green "✅ 证书申请成功 (耗时 ${elapsed}s)" >&2
             return 0
         fi
-        printf '\r\033[K  %s 等待证书签发... %ds/%ds' "${spinner[$spin_idx]}" "$elapsed" "$timeout" >&2
-        spin_idx=$(( (spin_idx + 1) % ${#spinner[@]} ))
+        printf '\r\033[K  %b●\033[0m 等待证书签发... %ds/%ds' "${_breath[$spin_idx]}" "$elapsed" "$timeout" >&2
+        spin_idx=$(( (spin_idx + 1) % ${#_breath[@]} ))
         sleep "$interval"
         ((elapsed+=interval))
         ((remaining-=interval))
