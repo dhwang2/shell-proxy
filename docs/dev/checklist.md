@@ -273,3 +273,9 @@
   - [x] Removed dead function `routing_user_requires_route_sync_on_protocol_add()`.
   - [x] Kept `custom` type handling in state processing and label rendering for backward compatibility.
   - [x] Re-validated with `bash -n` on all 4 modified files.
+
+- [x] **u-2-117 bugfix: fix ghost "user" group and unify protocol install success message (2026-03-15)**
+  - [x] Removed `normalize_proxy_user_name` fallback to `DEFAULT_PROXY_USER_NAME`/"user" — now returns empty for invalid input.
+  - [x] Updated `proxy_user_share_suffix_cached` and `proxy_user_link_name_cached` guards from `!= "user"` to `[[ -n ]]`.
+  - [x] Unified protocol install success message to `协议安装成功` for both first-install and reuse paths.
+  - [x] Re-validated with `bash -n`; deployed and verified on `gcp-oregon`.

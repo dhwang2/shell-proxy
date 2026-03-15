@@ -301,11 +301,10 @@ modify_singbox_inbounds_logic() {
             fi
             if protocol_install_session_active; then
                 protocol_install_apply_singbox_change
-                green “添加成功，已复用配置。”
             else
-                green "添加成功！重启 sing-box..."
                 protocol_install_apply_singbox_change
             fi
+            green “协议安装成功”
             return 0
         }
 

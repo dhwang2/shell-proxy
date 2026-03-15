@@ -73,11 +73,7 @@ normalize_proxy_user_name() {
 
     raw="$(printf '%s' "$raw" | tr '[:upper:]' '[:lower:]' | tr -d '\r' | tr -d '\n')"
     raw="$(printf '%s' "$raw" | sed -E 's/[[:space:]]+/-/g; s/[^a-z0-9._-]+/-/g; s/-+/-/g; s/^[-_.]+//; s/[-_.]+$//')"
-    if [[ -z "$raw" ]]; then
-        raw="$(printf '%s' "$DEFAULT_PROXY_USER_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9._-]+/-/g; s/-+/-/g; s/^[-_.]+//; s/[-_.]+$//')"
-    fi
-    [[ -z "$raw" ]] && raw="user"
-    normalized="$raw"
+    normalized="${raw:-}"
     PROXY_USER_NORMALIZED_NAME_CACHE["$cache_key"]="$normalized"
     printf '%s\n' "$normalized"
 }
@@ -538,7 +534,7 @@ proxy_user_share_suffix_cached() {
     fi
 
     suffix="$(normalize_proxy_user_name "$raw_name")"
-    if [[ -n "$raw_name" && "$suffix" != "user" ]]; then
+    if [[ -n "$suffix" ]]; then
         PROXY_USER_SHARE_SUFFIX_CACHE["$cache_key"]="$suffix"
         printf '%s\n' "$suffix"
         return 0
@@ -577,7 +573,7 @@ proxy_user_link_name_cached() {
     fi
 
     display_name="$(normalize_proxy_user_name "$raw_name")"
-    if [[ -n "$raw_name" && "$display_name" != "user" ]]; then
+    if [[ -n "$display_name" ]]; then
         PROXY_USER_LINK_NAME_CACHE["$cache_key"]="$display_name"
         printf '%s\n' "$display_name"
         return 0

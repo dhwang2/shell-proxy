@@ -918,3 +918,19 @@ Measured 6-protocol real-menu install for user `u193x1` -- before fix: `proto_5(
 
 - **Verification**:
   - `bash -n` passed on all 4 modified files.
+
+##### u-2-117 bugfix: fix ghost "user" group and unify protocol install success message (2026-03-15)
+> **Target**: Eliminate phantom "user" group creation and standardize protocol install success message.
+
+- **Investigation**:
+  1. Ghost "user" group found in `user-management.json` `.groups` with no corresponding `.name` key entry.
+  2. Root cause: `normalize_proxy_user_name()` had a fallback chain (`DEFAULT_PROXY_USER_NAME` → hardcoded "user") that never returned empty, defeating all downstream empty-checks in `proxy_user_group_add` and related functions.
+
+- **Fixes**:
+  1. Removed `DEFAULT_PROXY_USER_NAME` fallback and `raw="user"` hardcode from `normalize_proxy_user_name()` in `user_meta_ops.sh` — function now returns empty for invalid/empty inputs.
+  2. Updated guards in `proxy_user_share_suffix_cached` and `proxy_user_link_name_cached` from `!= "user"` check to `[[ -n ]]` empty check.
+  3. Unified protocol install success message: replaced "添加成功，已复用配置。" and "添加成功！重启 sing-box..." with single `协议安装成功` in `protocol_install_singbox_ops.sh`.
+
+- **Verification**:
+  - `bash -n` passed on all modified files.
+  - Deployed to `gcp-oregon`, rebuilt bundles, confirmed user list shows only dhwang and dhwang2 (no ghost "user").
