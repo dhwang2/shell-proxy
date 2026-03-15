@@ -92,7 +92,7 @@ print_share_section_title() {
 
 print_share_divider() {
     local indent="${1:-}"
-    echo "${indent}------------------------------------------------------------"
+    echo "${indent}--------------------------------------------------------------------"
 }
 
 share_user_color_code() {
@@ -401,12 +401,11 @@ manage_share() {
 
     if subscription_share_can_fast_render_empty_state "$conf_file"; then
         if ! subscription_share_view_cache_is_fresh "" "$conf_file" "$empty_render_fp"; then
-            subscription_share_empty_view_cache_rebuild "$conf_file" || { pause; return; }
+            subscription_share_empty_view_cache_rebuild "$conf_file" || return
         fi
         if [[ -f "$(subscription_share_view_text_file)" ]]; then
             cat "$(subscription_share_view_text_file)"
         fi
-        pause
         return
     fi
 
@@ -424,10 +423,10 @@ manage_share() {
     live_render_fp="$(calc_subscription_render_fingerprint "$share_host" "$conf_file" 2>/dev/null || true)"
 
     if ! subscription_share_view_cache_is_fresh "$share_host" "$conf_file" "${live_render_fp:-$cached_render_fp}"; then
-        subscription_share_ensure_full_support_loaded || { pause; return; }
+        subscription_share_ensure_full_support_loaded || return
         sync_singbox_loaded_fingerprint_passive
         proxy_run_with_spinner "正在整理订阅视图..." \
-            ensure_subscription_render_cache "_" "$share_host" "$conf_file" || { pause; return; }
+            ensure_subscription_render_cache "_" "$share_host" "$conf_file" || return
     fi
     if [[ -f "$(subscription_share_view_text_file)" ]]; then
         cat "$(subscription_share_view_text_file)"
@@ -438,17 +437,15 @@ manage_share() {
             render_file="/tmp/proxy-share-render.$$"
             : > "$render_file"
         fi
-        subscription_share_ensure_full_support_loaded || { rm -f "$render_file" 2>/dev/null || true; pause; return; }
+        subscription_share_ensure_full_support_loaded || { rm -f "$render_file" 2>/dev/null || true; return; }
         proxy_run_with_spinner "正在生成订阅视图..." \
             subscription_share_render_to_file "$render_file" "$share_host" "$conf_file" || {
             rm -f "$render_file" 2>/dev/null || true
-            pause
             return
         }
         cat "$render_file"
         rm -f "$render_file" 2>/dev/null || true
     fi
-    pause
 }
 
 # --- share link encoding, Reality key, JOIN-code (merged from share_link_ops.sh) ---

@@ -248,3 +248,14 @@
   - [x] Updated default widths in `common_ops.sh`: `proxy_menu_rule`, `proxy_menu_header`, `proxy_menu_divider` all 45→68.
   - [x] Redesigned main menu layout: wider 68-char `═` separators, centered title, protocol display `/` separator, `(N)` right-aligned menu items.
   - [x] Re-validated with `bash -n` on all 15 modified files.
+
+- [x] **u-2-114 ux: streamline menus — remove pause/hints, reorder protocols, compact prompts (2026-03-15)**
+  - [x] Deleted `pause()` function and all 60+ call sites across 16 files; removed `pause_unless_cancelled`.
+  - [x] Deleted `proxy_menu_back_hint` (zero callers); inlined `proxy_prompt_print` into `read_prompt`.
+  - [x] Unified `prompt_select_index`: removed "回车返回" hint, changed prompt to "选择序号(回车取消):".
+  - [x] Reordered install protocol menu: ss→vless→tuic→trojan→anytls→snell-v5, 2-space indent.
+  - [x] Removed release/repo selection from script update — defaults to repo mode.
+  - [x] Simplified chain proxy input: single-line Chinese format hint, removed yellow tip.
+  - [x] Extended share divider from 60→68 chars; double-space user name separator in uninstall table.
+  - [x] Removed 13 extra blank-line `echo` and 5 `\n` prefixes from protocol install headers.
+  - [x] Re-validated with `bash -n` on all 18 modified files; deployed and rebuilt on `gcp-oregon`.

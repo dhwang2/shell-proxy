@@ -549,10 +549,10 @@ manage_protocol_services() {
         fi
         [[ -z "$choice" ]] && return
         case $choice in
-            1) operate_protocol_services "restart"; pause ;;
-            2) operate_protocol_services "stop"; pause ;;
-            3) operate_protocol_services "start"; pause ;;
-            4) show_protocol_services_status_summary; pause ;;
+            1) operate_protocol_services "restart" ;;
+            2) operate_protocol_services "stop" ;;
+            3) operate_protocol_services "start" ;;
+            4) show_protocol_services_status_summary ;;
             *) return ;;
         esac
     done

@@ -67,7 +67,6 @@ manage_users() {
 
     if [[ -z "$conf_file" ]]; then
         red "未发现 sing-box 配置文件，请先重建配置。"
-        pause
         return
     fi
 
@@ -93,19 +92,15 @@ manage_users() {
         case "$choice" in
             1)
                 user_menu_run_action "list_user_groups" "$conf_file"
-                pause
                 ;;
             2)
                 user_menu_run_action "add_user_group" "$conf_file"
-                pause_unless_cancelled $?
                 ;;
             3)
                 user_menu_run_action "rename_user_group" "$conf_file"
-                pause_unless_cancelled $?
                 ;;
             4)
                 user_menu_run_action "delete_user_group" "$conf_file"
-                pause_unless_cancelled $?
                 ;;
             *)
                 red "无效输入"
@@ -190,7 +185,6 @@ user_group_member_count() {
 }
 
 list_user_groups() {
-    echo
     echo "用户列表:"
     local rows=()
     mapfile -t rows < <(render_user_group_rows "any")
@@ -268,7 +262,6 @@ suggest_global_user_name() {
 
 add_user_group() {
     local input_name target_name yn
-    echo
     read -r -p "用户名 (回车取消): " input_name
     proxy_is_blank_string "$input_name" && return 130
     target_name="$(printf '%s' "$input_name" | tr '[:upper:]' '[:lower:]' | tr -d '\r' | tr -d '\n' | sed -E 's/[[:space:]]+/-/g; s/[^a-z0-9._-]+/-/g; s/-+/-/g; s/^[-_.]+//; s/[-_.]+$//')"

@@ -26,16 +26,13 @@ manage_core() {
         [[ -z "$choice" ]] && return
         case $choice in
             1)
-                echo
                 local v
                 v="$(current_singbox_version)"; [[ -n "$v" ]] && print_kv "sing-box" "v${v}" "\033[32m" || print_kv "sing-box" "missing" "\033[31m"
                 v="$(current_snell_version)"; [[ -n "$v" ]] && print_kv "snell-v5" "v${v}" "\033[32m" || print_kv "snell-v5" "missing" "\033[31m"
                 v="$(current_shadowtls_version)"; [[ -n "$v" ]] && print_kv "${SHADOWTLS_DISPLAY_NAME}" "v${v}" "\033[32m" || print_kv "${SHADOWTLS_DISPLAY_NAME}" "missing" "\033[31m"
                 v="$(current_caddy_version)"; [[ -n "$v" ]] && print_kv "caddy" "v${v}" "\033[32m" || print_kv "caddy" "missing" "\033[31m"
-                pause
                 ;;
             2)
-                echo
                 local cur latest
                 cur="$(current_singbox_version)"; latest="$(github_latest_release_version "SagerNet/sing-box")"
                 if [[ -z "$cur" ]]; then
@@ -61,12 +58,9 @@ manage_core() {
                 else
                     print_kv "caddy" "v${cur} (最新)" "\033[32m"
                 fi
-                echo
                 yellow "提示: snell 的更新不由此菜单自动处理。"
-                pause
                 ;;
             3)
-                echo
                 local cur_s latest_s cur_st latest_st cur_c latest_c need=0
                 cur_s="$(current_singbox_version)"; latest_s="$(github_latest_release_version "SagerNet/sing-box")"
                 cur_st="$(current_shadowtls_version)"; latest_st="$(github_latest_release_version "ihciah/shadow-tls")"
@@ -76,7 +70,6 @@ manage_core() {
                 if [[ -n "$cur_c" && -n "$latest_c" ]] && version_gt "$latest_c" "$cur_c"; then need=1; fi
                 if [[ "$need" -eq 0 ]]; then
                     green "已是最新版本"
-                    pause
                     continue
                 fi
                 read -p "发现可更新版本，确认更新? [y/N]: " yn
@@ -93,7 +86,6 @@ manage_core() {
                     yellow "更新 caddy -> v${latest_c} ..."
                     update_caddy_core "$latest_c" && green "caddy 更新成功" || red "caddy 更新失败"
                 fi
-                pause
                 ;;
             *) return ;;
         esac

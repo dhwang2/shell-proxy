@@ -871,3 +871,20 @@ Measured 6-protocol real-menu install for user `u193x1` -- before fix: `proto_5(
 - **Verification**:
   - `bash -n` passed on all 15 modified `.sh` files.
   - Zero raw `echo "==="` or `echo "---"` dividers remain in `app/modules/`.
+
+##### u-2-114 ux: streamline menus — remove pause/hints, reorder protocols, compact prompts (2026-03-15)
+> **Target**: Remove all "回车返回" pause prompts, streamline menu interactions, and eliminate extra blank lines.
+
+- **Changes**:
+  1. Deleted `pause()` and all 60+ call sites across 16 files; deleted `pause_unless_cancelled` from `bootstrap_ops.sh`.
+  2. Deleted `proxy_menu_back_hint` (zero callers). Kept `proxy_prompt_print` (used by `read_prompt`).
+  3. Unified `prompt_select_index`: removed "回车返回" hint, prompt → "选择序号(回车取消):".
+  4. Reordered install protocol menu: ss→vless→tuic→trojan→anytls→snell-v5, 2-space indent, remapped dispatch.
+  5. Removed release/repo selection from script update — defaults to repo mode.
+  6. Simplified chain proxy input: single-line Chinese format hint, removed yellow tip.
+  7. Extended share divider 60→68 chars; double-space user separator in uninstall table.
+  8. Removed 13 blank-line `echo` across 7 files and 5 `\n` prefixes from install headers.
+
+- **Verification**:
+  - `bash -n` passed on all 18 modified files.
+  - Deployed to `gcp-oregon`, rebuilt bundles, verified menu interactions.

@@ -209,11 +209,9 @@ show_status_and_logs() {
 
             if [[ "${#choices[@]}" -eq 0 ]]; then
                 yellow "未检测到已安装协议，无法查看服务日志。"
-                pause
                 return 0
             fi
 
-            echo
             echo "服务日志"
             proxy_menu_divider
             local idx=1
@@ -248,7 +246,6 @@ show_status_and_logs() {
             else
                 echo "${selected_label} (最近 50 行)"
             fi
-            pause
         done
     }
 
@@ -275,14 +272,12 @@ show_status_and_logs() {
                     proxy_log "INFO" "运行日志: 查看脚本日志"
                 fi
                 show_file_tail_logs "$PROXY_SCRIPT_LOG" "脚本日志" 50
-                pause
                 ;;
             2)
                 if command -v proxy_log >/dev/null 2>&1; then
                     proxy_log "INFO" "运行日志: 查看 Watchdog 日志"
                 fi
                 show_watchdog_logs 50
-                pause
                 ;;
             3)
                 if command -v proxy_log >/dev/null 2>&1; then
@@ -322,7 +317,6 @@ show_config_details() {
                 conf_file="$(get_conf_file)"
                 if [[ -z "$conf_file" || ! -f "$conf_file" ]]; then
                     yellow "无配置"
-                    pause
                     continue
                 fi
 
@@ -349,7 +343,6 @@ show_config_details() {
                 echo "DNS策略: ${dns_strategy}"
                 proxy_menu_divider
                 print_full_singbox_config_with_compact_rules "$conf_file"
-                pause
                 ;;
             2)
                 ui_clear
@@ -359,7 +352,6 @@ show_config_details() {
                 else
                     yellow "无 snell-v5 配置"
                 fi
-                pause
                 ;;
             3)
                 ui_clear
@@ -367,7 +359,6 @@ show_config_details() {
                 conf_file="$(get_conf_file)"
                 if ! is_shadowtls_configured; then
                     yellow "无 shadow-tls-v3 配置"
-                    pause
                     continue
                 fi
 
@@ -389,7 +380,6 @@ show_config_details() {
                     printed_shadowtls=1
                 done < <(shadowtls_binding_lines "$conf_file")
                 (( printed_shadowtls == 0 )) && yellow "未检测到绑定 SS 或 Snell 的 shadow-tls-v3 服务"
-                pause
                 ;;
             *)
                 return

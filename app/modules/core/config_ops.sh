@@ -236,13 +236,7 @@ surge_link_verbose_params_enabled() {
 
 prompt_select_index() {
     local __pick_var="$1" __pick_value=""
-    if declare -F proxy_prompt_print >/dev/null 2>&1; then
-        proxy_prompt_print $'回车返回\n\n'
-    else
-        echo "回车返回"
-        echo
-    fi
-    if ! read_prompt __pick_value "选择序号: "; then
+    if ! read_prompt __pick_value "选择序号(回车取消): "; then
         printf -v "$__pick_var" '%s' ""
         return 130
     fi

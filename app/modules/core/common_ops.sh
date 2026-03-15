@@ -37,17 +37,6 @@ proxy_prompt_print() {
 }
 fi
 
-if ! declare -F pause >/dev/null 2>&1; then
-pause() {
-    local __input=""
-    proxy_prompt_print $'\n回车返回'
-    if proxy_prompt_tty_available; then
-        IFS= read -r __input < /dev/tty || true
-    else
-        IFS= read -r __input || true
-    fi
-}
-fi
 
 if ! declare -F proxy_ui_color_enabled >/dev/null 2>&1; then
 proxy_ui_color_enabled() {
@@ -86,17 +75,6 @@ fi
 if ! declare -F proxy_menu_divider >/dev/null 2>&1; then
 proxy_menu_divider() {
     proxy_menu_rule "─" "${1:-68}"
-}
-fi
-
-if ! declare -F proxy_menu_back_hint >/dev/null 2>&1; then
-proxy_menu_back_hint() {
-    proxy_menu_divider "${1:-34}"
-    if proxy_ui_color_enabled; then
-        printf '\033[90m回车返回上一层\033[0m\n\n'
-    else
-        printf '回车返回上一层\n\n'
-    fi
 }
 fi
 

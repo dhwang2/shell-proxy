@@ -100,7 +100,6 @@ routing_render_test_effect_uncached() {
     local idx outbound tmp_file probe_result
     state_json="$(routing_load_state_json)"
 
-    echo
     if routing_context_is_user; then
         echo "用户: ${ROUTING_USER_CONTEXT_NAME}"
         proxy_menu_divider
@@ -267,7 +266,6 @@ routing_render_test_effect_pending_view() {
     local conf_file="${1:-}" state_json count
     state_json="$(routing_load_state_json)"
 
-    echo
     if routing_context_is_user; then
         echo "用户: ${ROUTING_USER_CONTEXT_NAME}"
         proxy_menu_divider

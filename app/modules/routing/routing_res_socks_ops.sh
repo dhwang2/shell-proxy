@@ -170,19 +170,12 @@ configure_res_socks_interactive() {
 
     if [[ -z "$conf_file" || ! -f "$conf_file" ]]; then
         red "未发现 sing-box 配置文件，请先重建配置。"
-        pause
         return 1
     fi
 
-    echo
-    yellow "输入格式: address:port:account:password"
-    yellow "提示: 建议使用 IPv4 地址，避免 VPS 本地 DNS 解析。"
-
-    echo
-    echo "回车返回"
-    echo
+    echo "输入格式: 地址:端口:用户:密码"
     local server port username password compact_input parsed_line
-    if ! read_prompt compact_input "链式代理节点: "; then
+    if ! read_prompt compact_input "链式代理节点(回车取消): "; then
         return 0
     fi
     [[ -z "${compact_input:-}" ]] && return 0
@@ -190,7 +183,6 @@ configure_res_socks_interactive() {
     parsed_line="$(parse_res_socks_compact_input "$compact_input" 2>/dev/null || true)"
     if [[ -z "$parsed_line" ]]; then
         red "格式错误，请按 address:port:account:password 输入。"
-        pause
         return 1
     fi
     IFS='|' read -r server port username password <<<"$parsed_line"
@@ -206,14 +198,12 @@ configure_res_socks_interactive() {
     node_id="$(res_socks_add_node "$server" "$port" "$username" "$password" 2>/dev/null || true)"
     if [[ -z "$node_id" ]]; then
         red "保存链式代理节点失败"
-        pause
         return 1
     fi
 
     node_tag="$(res_socks_outbound_tag_for_node_id "$node_id" 2>/dev/null || true)"
     if ! sync_res_socks_outbounds_to_conf "$conf_file"; then
         red "写入 sing-box 配置失败"
-        pause
         return 1
     fi
     sync_dns_with_route "$conf_file" || true
@@ -224,7 +214,6 @@ configure_res_socks_interactive() {
         routing_status_schedule_refresh_all_contexts "$conf_file" >/dev/null 2>&1 || true
     fi
     green "链式代理节点已添加: ${node_tag:-$node_id}"
-    pause
     return 0
 }
 
@@ -236,7 +225,7 @@ delete_res_socks_node_interactive() {
     local node_id
     node_id="$(res_socks_pick_node_id_interactive "删除链式代理节点")"
     [[ -z "$node_id" ]] && return 0
-    [[ "$node_id" == "__none__" ]] && { yellow "当前没有可删除的链式代理节点。"; pause; return 0; }
+    [[ "$node_id" == "__none__" ]] && { yellow "当前没有可删除的链式代理节点。"; return 0; }
     [[ "$node_id" == "__invalid__" ]] && { red "输入无效"; sleep 1; return 1; }
 
     local count node_line node_tag server port username password
@@ -246,7 +235,6 @@ delete_res_socks_node_interactive() {
 
     if res_socks_conf_references_outbound "$conf_file" "$node_tag"; then
         yellow "当前配置仍在使用该链式代理节点(${node_tag})，请先修改全局出口或相关分流规则。"
-        pause
         return 1
     fi
 
@@ -256,13 +244,11 @@ delete_res_socks_node_interactive() {
 
     if ! res_socks_delete_node "$node_id"; then
         red "删除链式代理节点失败"
-        pause
         return 1
     fi
 
     if ! sync_res_socks_outbounds_to_conf "$conf_file"; then
         red "同步 sing-box 出站失败"
-        pause
         return 1
     fi
     sync_dns_with_route "$conf_file" || true
@@ -273,7 +259,6 @@ delete_res_socks_node_interactive() {
         routing_status_schedule_refresh_all_contexts "$conf_file" >/dev/null 2>&1 || true
     fi
     green "已删除链式代理节点"
-    pause
     return 0
 }
 

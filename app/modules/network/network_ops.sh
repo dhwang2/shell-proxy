@@ -76,7 +76,6 @@ manage_network_optimization() {
 
     if ! kernel_supports_bbr; then
         red "内核版本 $(uname -r) 不支持 BBR (需要 4.9+)"
-        pause
         return 1
     fi
 
@@ -145,7 +144,6 @@ manage_network_optimization() {
                 if command -v proxy_log >/dev/null 2>&1; then
                     proxy_log "INFO" "网络优化: 已卸载 BBR 配置"
                 fi
-                pause
                 return 0
                 ;;
             *)
@@ -165,7 +163,6 @@ manage_network_optimization() {
     modprobe tcp_bbr 2>/dev/null || true
     if ! sysctl net.ipv4.tcp_available_congestion_control 2>/dev/null | grep -qw bbr; then
         red "BBR 模块不可用，请检查内核配置"
-        pause
         return 1
     fi
 
@@ -261,7 +258,6 @@ EOF
     if echo "$sysctl_output" | grep -Eq "Invalid argument|Permission denied"; then
         red "配置应用失败"
         echo "$sysctl_output"
-        pause
         return 1
     fi
     if echo "$sysctl_output" | grep -q "unknown key"; then
@@ -294,5 +290,4 @@ EOF
             proxy_log "WARN" "网络优化: BBR 未完全生效"
         fi
     fi
-    pause
 }

@@ -296,7 +296,6 @@ remove_protocol() {
         cached_name_rows_text="$(protocol_menu_cache_read_name_rows 2>/dev/null || true)"
         if [[ ${#protocol_names[@]} -eq 0 ]]; then
             yellow "当前未检测到可卸载的协议。"
-            pause
             return
         fi
 
@@ -320,7 +319,15 @@ remove_protocol() {
             summary_protos+=("$idx")
             summary_labels+=("$(proxy_user_protocol_label "$proto")")
             summary_counts+=("$user_count")
-            local IFS='  '; summary_users+=("${summary_parts[*]:-无}"); unset IFS
+            local joined=""
+            if (( ${#summary_parts[@]} > 0 )); then
+                joined="${summary_parts[0]}"
+                local i
+                for ((i=1; i<${#summary_parts[@]}; i++)); do
+                    joined+="  ${summary_parts[$i]}"
+                done
+            fi
+            summary_users+=("${joined:-无}")
             ((idx++))
         done
         local target_proto
@@ -337,7 +344,6 @@ remove_protocol() {
         [[ -z "$pick" ]] && return
         if ! [[ "$pick" =~ ^[0-9]+$ ]] || (( pick < 1 || pick > ${#protocol_names[@]} )); then
             red "输入无效"
-            pause
             continue
         fi
         target_proto="${protocol_names[$((pick-1))]}"
@@ -354,7 +360,7 @@ remove_protocol() {
             if ! read_prompt yn "确认直接删除空协议 [${target_label}] 的入站配置? [y/N]: "; then
                 yn=""
             fi
-            [[ "${yn,,}" == "y" ]] || { yellow "已取消"; pause; continue; }
+            [[ "${yn,,}" == "y" ]] || { yellow "已取消"; continue; }
 
             if proxy_protocol_remove_empty_entry "$conf_file" "$target_proto"; then
                 green "已删除空协议 ${target_label}"
@@ -362,7 +368,6 @@ remove_protocol() {
             else
                 red "删除空协议 ${target_label} 失败"
             fi
-            pause
             continue
         fi
 
@@ -380,7 +385,6 @@ remove_protocol() {
         [[ -z "$pick" ]] && return
         if ! [[ "$pick" =~ ^[0-9]+$ ]] || (( pick < 1 || pick > ${#name_rows[@]} )); then
             red "输入无效"
-            pause
             continue
         fi
         IFS=$'\t' read -r target_name _active_count _disabled_count <<<"${name_rows[$((pick-1))]}"
@@ -392,7 +396,7 @@ remove_protocol() {
         if ! read_prompt yn "确认卸载用户名 [${target_name}] 的 ${#protos[@]} 项协议? [y/N]: "; then
             yn=""
         fi
-        [[ "${yn,,}" == "y" ]] || { yellow "已取消"; pause; continue; }
+        [[ "${yn,,}" == "y" ]] || { yellow "已取消"; continue; }
 
         local removed_count=0 failed_count=0 conf_changed=0 route_sync_needed=0
         local -a removed_labels=() failed_labels=() shadowtls_services_to_disable=()
@@ -481,7 +485,6 @@ remove_protocol() {
         (( failed_count > 0 )) && red "卸载失败协议: ${failed_labels[*]}"
         (( removed_count == 0 && failed_count == 0 )) && yellow "未发生变更"
         protocol_menu_cache_schedule_rebuild "$conf_file"
-        pause
     done
 }
 

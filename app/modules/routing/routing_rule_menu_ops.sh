@@ -228,14 +228,14 @@ routing_add_rule_interactive() {
             r) mapped_type="ads" ;;
             c) mapped_type="custom" ;;
             f) mapped_type="all" ;;
-            *) red "无效输入"; pause; return 1 ;;
+            *) red "无效输入"; return 1 ;;
         esac
         if [[ "$picked_csv" != *",$mapped_type,"* ]]; then
             picked_types+=("$mapped_type")
             picked_csv+="${mapped_type},"
         fi
     done
-    [[ ${#picked_types[@]} -eq 0 ]] && { red "无效输入"; pause; return 1; }
+    [[ ${#picked_types[@]} -eq 0 ]] && { red "无效输入"; return 1; }
 
     local outbound
     outbound="$(routing_select_outbound "$conf_file")" || return 0
@@ -246,10 +246,10 @@ routing_add_rule_interactive() {
         echo "示例: openai.com,claude.ai,1.2.3.4/32,keyword:telegram"
         read -p "输入匹配规则(逗号分隔): " domains
         domains="$(echo "$domains" | tr -d '[:space:]')"
-        [[ -z "$domains" ]] && { yellow "输入为空，已取消"; pause; return 1; }
+        [[ -z "$domains" ]] && { yellow "输入为空，已取消"; return 1; }
         local preview_rule
         preview_rule="$(routing_build_custom_rule "$outbound" "$domains")"
-        [[ -z "$preview_rule" ]] && { red "自定义规则无有效匹配项，已取消"; pause; return 1; }
+        [[ -z "$preview_rule" ]] && { red "自定义规则无有效匹配项，已取消"; return 1; }
     fi
 
     local old_state new_state rule_id rule_type
@@ -277,7 +277,7 @@ routing_add_rule_interactive() {
         [[ -z "$new_state" ]] && break
     done
 
-    [[ -z "$new_state" ]] && { red "规则生成失败"; pause; return 1; }
+    [[ -z "$new_state" ]] && { red "规则生成失败"; return 1; }
     if (( ROUTING_RULE_SESSION_ACTIVE == 1 )); then
         if routing_rule_session_set_state "$new_state"; then
             green "分流规则已加入待提交（本次处理 ${#picked_types[@]} 项）"
@@ -289,7 +289,6 @@ routing_add_rule_interactive() {
             "$conf_file" "$old_state" "$new_state" \
             "正在应用分流变更..." "分流规则已更新（本次处理 ${#picked_types[@]} 项）" "更新分流规则失败"
     fi
-    pause
 }
 
 routing_delete_rule_interactive() {
@@ -300,7 +299,6 @@ routing_delete_rule_interactive() {
     count="$(echo "$state_json" | jq -r 'length' 2>/dev/null || echo 0)"
     if [[ "$count" -eq 0 ]]; then
         yellow "当前没有分流规则。"
-        pause
         return 0
     fi
 
@@ -346,7 +344,6 @@ routing_delete_rule_interactive() {
             *)
                 if ! [[ "$normalized" =~ ^[0-9]+$ ]] || (( normalized < 1 || normalized > count )); then
                     red "无效输入"
-                    pause
                     return 1
                 fi
                 selected_map["$normalized"]=1
@@ -357,7 +354,7 @@ routing_delete_rule_interactive() {
     for token in "${!selected_map[@]}"; do
         selected_indexes+=("$token")
     done
-    (( ${#selected_indexes[@]} > 0 )) || { yellow "未选择任何规则"; pause; return 0; }
+    (( ${#selected_indexes[@]} > 0 )) || { yellow "未选择任何规则"; return 0; }
 
     IFS=$'\n' selected_indexes=($(printf '%s\n' "${selected_indexes[@]}" | sort -n))
     unset IFS
@@ -375,7 +372,7 @@ routing_delete_rule_interactive() {
     new_state="$(jq -c --argjson idxs "$jq_indexes" '
         to_entries | map(select((.key as $k | ($idxs | index($k))) == null)) | map(.value)
     ' <<<"$old_state" 2>/dev/null)"
-    [[ -z "$new_state" ]] && { red "删除失败"; pause; return 1; }
+    [[ -z "$new_state" ]] && { red "删除失败"; return 1; }
 
     if (( ROUTING_RULE_SESSION_ACTIVE == 1 )); then
         if routing_rule_session_set_state "$new_state"; then
@@ -388,7 +385,6 @@ routing_delete_rule_interactive() {
             "$conf_file" "$old_state" "$new_state" \
             "正在应用分流变更..." "已删除 ${deleted_count} 条分流规则" "删除分流规则失败"
     fi
-    pause
 }
 
 routing_modify_rule_interactive() {
@@ -399,7 +395,6 @@ routing_modify_rule_interactive() {
     count="$(jq -r 'length' <<<"$state_json" 2>/dev/null || echo 0)"
     if [[ "$count" -eq 0 ]]; then
         yellow "当前没有分流规则。"
-        pause
         return 0
     fi
 
@@ -446,7 +441,6 @@ routing_modify_rule_interactive() {
             *)
                 if ! [[ "$normalized" =~ ^[0-9]+$ ]] || (( normalized < 1 || normalized > count )); then
                     red "无效输入"
-                    pause
                     return 1
                 fi
                 selected_map["$normalized"]=1
@@ -457,7 +451,7 @@ routing_modify_rule_interactive() {
     for token in "${!selected_map[@]}"; do
         selected_indexes+=("$token")
     done
-    (( ${#selected_indexes[@]} > 0 )) || { yellow "未选择任何规则"; pause; return 0; }
+    (( ${#selected_indexes[@]} > 0 )) || { yellow "未选择任何规则"; return 0; }
 
     IFS=$'\n' selected_indexes=($(printf '%s\n' "${selected_indexes[@]}" | sort -n))
     unset IFS
@@ -478,7 +472,7 @@ routing_modify_rule_interactive() {
         to_entries
         | map(if (.key as $k | ($idxs | index($k))) != null then (.value.outbound = $outbound | .value) else .value end)
     ' <<<"$old_state" 2>/dev/null)"
-    [[ -z "$new_state" ]] && { red "修改失败"; pause; return 1; }
+    [[ -z "$new_state" ]] && { red "修改失败"; return 1; }
 
     if (( ROUTING_RULE_SESSION_ACTIVE == 1 )); then
         if routing_rule_session_set_state "$new_state"; then
@@ -491,12 +485,11 @@ routing_modify_rule_interactive() {
             "$conf_file" "$old_state" "$new_state" \
             "正在应用分流变更..." "已更新 ${modified_count} 条分流规则的出口" "修改分流规则失败"
     fi
-    pause
 }
 
 configure_routing_rules_menu() {
     local conf_file
-    conf_file="$(routing_conf_file_or_warn)" || { pause; return 1; }
+    conf_file="$(routing_conf_file_or_warn)" || return 1
     routing_rule_session_begin "$conf_file"
 
     while :; do
@@ -534,7 +527,6 @@ configure_routing_rules_menu() {
                     read -r -p "检测到未提交变更，保存并应用后再返回? [y/N]: " yn
                     if [[ "${yn,,}" == "y" ]]; then
                         if ! routing_rule_session_apply_pending "$conf_file"; then
-                            pause
                             continue
                         fi
                     else

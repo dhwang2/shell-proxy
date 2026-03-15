@@ -334,7 +334,6 @@ routing_select_outbound() {
         local render_file=""
         render_file="$(routing_render_to_temp_file)"
         {
-            echo
             echo "选择出口"
             local idx=1
             local label

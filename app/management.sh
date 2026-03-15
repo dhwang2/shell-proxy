@@ -417,12 +417,10 @@ run_menu_group_action() {
     local should_invalidate_service_state="${3:-1}"
     local had_apply_mode=0 previous_apply_mode=""
     load_named_menu_modules "$group" || {
-        pause
         return 1
     }
     if ! proxy_assert_menu_handler_loaded "$handler"; then
         red "错误: 菜单模块未导出处理函数 ${handler}，请执行 proxy update（shell-proxy）或重新安装。"
-        pause
         return 1
     fi
     if [[ -n "${PROXY_CONFIG_APPLY_MODE+x}" ]]; then

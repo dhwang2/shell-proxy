@@ -314,7 +314,6 @@ manage_firewall_convergence() {
             1)
                 if [[ "$backend" == "unsupported" ]]; then
                     red "未检测到可用的 nftables/iptables，无法执行防火墙收敛。"
-                    pause
                     continue
                 fi
                 yellow "即将按检测结果重写受管防火墙规则。"
@@ -337,11 +336,9 @@ manage_firewall_convergence() {
                         red "iptables 防火墙收敛失败"
                     fi
                 fi
-                pause
                 ;;
             2)
                 network_firewall_show_current_rules "$backend"
-                pause
                 ;;
             *)
                 return 0

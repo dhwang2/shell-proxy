@@ -78,7 +78,7 @@ modify_singbox_inbounds_logic() {
     conf_file=$(get_conf_file)
     if [[ -z "$conf_file" ]]; then
         red "未发现配置文件，请先重建配置。"
-        pause; return
+        return
     fi
 
     local selected_proto=""
@@ -93,26 +93,23 @@ modify_singbox_inbounds_logic() {
 
     local selected_user_name
     selected_user_name="$(proxy_user_select_name_for_protocol_action "选择用户名" "any" "$conf_file")"
-    [[ -z "$selected_user_name" ]] && { pause; return; }
-    [[ "$selected_user_name" == "__none__" ]] && { yellow "请先添加用户名"; pause; return; }
-    [[ "$selected_user_name" == "__invalid__" ]] && { red "输入无效"; pause; return; }
+    [[ -z "$selected_user_name" ]] && return
+    [[ "$selected_user_name" == "__none__" ]] && { yellow "请先添加用户名"; return; }
+    [[ "$selected_user_name" == "__invalid__" ]] && { red "输入无效"; return; }
     selected_user_name="$(normalize_proxy_user_name "$selected_user_name")"
     if [[ -n "$selected_proto" ]] && proxy_user_has_protocol_for_name "$selected_user_name" "$selected_proto" "any" "$conf_file"; then
         yellow "用户名 ${selected_user_name} 已拥有 ${selected_proto_label} 协议，无需重复安装。"
-        pause
         return
     fi
     local target_inbound_idx
     target_inbound_idx="$(proxy_select_install_inbound_for_protocol "$conf_file" "$selected_proto")"
-    [[ -z "$target_inbound_idx" ]] && { pause; return; }
-    [[ "$target_inbound_idx" == "__invalid__" ]] && { red "输入无效"; pause; return; }
+    [[ -z "$target_inbound_idx" ]] && return
+    [[ "$target_inbound_idx" == "__invalid__" ]] && { red "输入无效"; return; }
     if [[ "$target_inbound_idx" != "__new__" ]]; then
         if proxy_append_user_to_existing_inbound "$conf_file" "$selected_proto" "$target_inbound_idx" "$selected_user_name"; then
-            pause
             return
         fi
         red "复用现有 ${selected_proto_label} 入站失败"
-        pause
         return
     fi
 
@@ -139,12 +136,12 @@ modify_singbox_inbounds_logic() {
     port_prompt="$(inbound_port_prompt_text)"
 
     if [[ "$type_code" == "1" ]]; then
-        echo -e "\n--- 添加 trojan ---"
+        echo "--- 添加 trojan ---"
         local tr_build tr_lines
         tr_build="$(protocol_install_build_trojan_inbound "$conf_file" "$listen_addr" "$selected_user_name" "$random_min_port" "$port_prompt")"
         case $? in
-            2) red "❌ 无法继续：trojan 必须依赖有效证书。"; pause; return ;;
-            3) red "错误: 域名无效。"; pause; return ;;
+            2) red "❌ 无法继续：trojan 必须依赖有效证书。"; return ;;
+            3) red "错误: 域名无效。"; return ;;
             *) ;;
         esac
         mapfile -t tr_lines <<<"$tr_build"
@@ -154,18 +151,17 @@ modify_singbox_inbounds_logic() {
         new_inbound="$(printf '%s\n' "${tr_lines[@]:3}")"
         if [[ -z "$new_inbound" ]]; then
             red "错误: 域名无效。"
-            pause
             return
         fi
         initial_user_name="$selected_user_name"
         initial_user_id="$tr_pass"
     elif [[ "$type_code" == "2" ]]; then
-        echo -e "\n--- 添加 vless reality ---"
+        echo "--- 添加 vless reality ---"
         local v_build v_lines
         v_build="$(protocol_install_build_vless_inbound "$conf_file" "$listen_addr" "$selected_user_name" "$random_min_port" "$port_prompt" "$cur_uuid")"
         if [[ $? -ne 0 ]]; then
             red "❌ Reality 密钥生成失败，请检查 sing-box 或 openssl 环境。"
-            pause; return
+            return
         fi
         mapfile -t v_lines <<<"$v_build"
         local v_port="${v_lines[0]}"
@@ -174,11 +170,11 @@ modify_singbox_inbounds_logic() {
         initial_user_id="$cur_uuid"
         new_inbound="$(printf '%s\n' "${v_lines[@]:3}")"
     elif [[ "$type_code" == "3" ]]; then
-        echo -e "\n--- 添加 tuic v5 ---"
+        echo "--- 添加 tuic v5 ---"
         local t_build t_lines
         t_build="$(protocol_install_build_tuic_inbound "$conf_file" "$listen_addr" "$selected_user_name" "$random_min_port" "$random_max_port" "$cur_uuid")"
         case $? in
-            2) red "❌ 无法继续：tuic 必须依赖有效证书。"; pause; return ;;
+            2) red "❌ 无法继续：tuic 必须依赖有效证书。"; return ;;
             *) ;;
         esac
         mapfile -t t_lines <<<"$t_build"
@@ -189,20 +185,18 @@ modify_singbox_inbounds_logic() {
         initial_user_id="$cur_uuid"
         new_inbound="$(printf '%s\n' "${t_lines[@]:3}")"
     elif [[ "$type_code" == "4" ]]; then
-        echo -e "\n--- 添加 ss ---"
+        echo "--- 添加 ss ---"
         local ss_build ss_lines
         ss_build="$(protocol_install_build_ss_inbound "$conf_file" "$listen_addr" "$selected_user_name" "$random_min_port" "$port_prompt")"
         case $? in
             3)
                 red "仅支持 ss 2022 方法。"
-                pause
                 return
                 ;;
             4)
                 local ss_key_len
                 ss_key_len="$(ss2022_key_length "2022-blake3-aes-128-gcm")"
                 red "密码格式无效：需要 Base64 编码的有效 ss 2022 密钥。"
-                pause
                 return
                 ;;
         esac
@@ -213,7 +207,6 @@ modify_singbox_inbounds_logic() {
         new_inbound="$(printf '%s\n' "${ss_lines[@]:3}")"
         if [[ -z "$new_inbound" ]]; then
             red "仅支持 ss 2022 方法。"
-            pause
             return
         fi
         initial_user_name="$selected_user_name"
@@ -221,11 +214,11 @@ modify_singbox_inbounds_logic() {
         shadowtls_target_port="$ss_port"
         shadowtls_target_proto="ss"
     elif [[ "$type_code" == "5" ]]; then
-        echo -e "\n--- 添加 anytls ---"
+        echo "--- 添加 anytls ---"
         local a_build a_lines
         a_build="$(protocol_install_build_anytls_inbound "$conf_file" "$listen_addr" "$selected_user_name" "$random_min_port" "$port_prompt")"
         case $? in
-            2) red "❌ 无法继续：anytls 必须依赖有效证书。"; pause; return ;;
+            2) red "❌ 无法继续：anytls 必须依赖有效证书。"; return ;;
             *) ;;
         esac
         mapfile -t a_lines <<<"$a_build"
@@ -246,7 +239,6 @@ modify_singbox_inbounds_logic() {
         if [[ -z "$new_inbound_json" ]]; then
             rm -f "$tmp_json"
             red "内部错误：生成入站配置失败（JSON 无效）。"
-            pause
             return
         fi
         protocol_install_apply_new_inbound_change() {
@@ -322,12 +314,10 @@ modify_singbox_inbounds_logic() {
                 protocol_install_apply_new_inbound_change
             }
             if ! proxy_run_with_spinner_compact "正在写入协议配置..." protocol_install_apply_new_inbound_change_with_spinner; then
-                pause
                 return
             fi
         else
             if ! protocol_install_apply_new_inbound_change; then
-                pause
                 return
             fi
         fi
@@ -337,7 +327,6 @@ modify_singbox_inbounds_logic() {
         # the spinner keeps overwriting the terminal. Keep the optional ShadowTLS
         # setup outside the spinner to avoid hidden interactive waits.
         if [[ "$shadowtls_target_proto" == "ss" && -n "$shadowtls_target_port" ]]; then
-            echo
             local ss_st_enable=""
             if ! read_prompt ss_st_enable "是否配置 shadow-tls-v3 保护此 ss 端口? [y/N]: "; then
                 ss_st_enable=""
@@ -347,7 +336,6 @@ modify_singbox_inbounds_logic() {
             fi
         fi
     fi
-    pause
 }
 
 # --- sing-box inbound build helpers (merged from protocol_install_singbox_build_ops.sh) ---
@@ -1141,12 +1129,12 @@ add_protocol() {
             "$summary_ports" "$occupied_ports" "$random_min_port" "$random_max_port" "$C_META" "$C_OCCUPIED")"
 
         echo -e "(${compact_port_summary})"
-        echo "1. trojan"
-        echo "2. vless"
-        echo "3. tuic"
-        echo "4. ss"
-        echo "5. anytls"
-        echo "6. snell-v5"
+        echo "  1. ss"
+        echo "  2. vless"
+        echo "  3. tuic"
+        echo "  4. trojan"
+        echo "  5. anytls"
+        echo "  6. snell-v5"
         proxy_menu_rule "═"
         if ! read_prompt proto_type "选择(回车返回): "; then
             break
@@ -1154,7 +1142,11 @@ add_protocol() {
         [[ -z "$proto_type" ]] && break
 
         case $proto_type in
-            1|2|3|4|5) modify_singbox_inbounds_logic "$proto_type" ;;
+            1) modify_singbox_inbounds_logic 4 ;;
+            2) modify_singbox_inbounds_logic 2 ;;
+            3) modify_singbox_inbounds_logic 3 ;;
+            4) modify_singbox_inbounds_logic 1 ;;
+            5) modify_singbox_inbounds_logic 5 ;;
             6) modify_snell_config ;;
             *)
                 red "无效输入"
@@ -1170,9 +1162,6 @@ add_protocol() {
 
     session_rc=0
     protocol_install_session_end || session_rc=$?
-    if [[ "$session_rc" -eq 0 ]]; then
-        pause
-    fi
 }
 
 # --- snell installation flow helpers (merged from protocol_install_snell_ops.sh) ---
@@ -1198,9 +1187,9 @@ modify_snell_config() {
 
     local selected_user_name
     selected_user_name="$(proxy_user_select_name_for_protocol_action "选择用户名" "any" "$conf_file_for_port")"
-    [[ -z "$selected_user_name" ]] && { pause; return; }
-    [[ "$selected_user_name" == "__none__" ]] && { yellow "请先添加用户名"; pause; return; }
-    [[ "$selected_user_name" == "__invalid__" ]] && { red "输入无效"; pause; return; }
+    [[ -z "$selected_user_name" ]] && return
+    [[ "$selected_user_name" == "__none__" ]] && { yellow "请先添加用户名"; return; }
+    [[ "$selected_user_name" == "__invalid__" ]] && { red "输入无效"; return; }
     selected_user_name="$(normalize_proxy_user_name "$selected_user_name")"
 
     if [[ "$has_conf" == "yes" ]]; then
@@ -1345,18 +1334,15 @@ EOF
     if declare -F proxy_run_with_spinner_compact >/dev/null 2>&1 && proxy_prompt_tty_available 2>/dev/null; then
         proxy_run_with_spinner_compact "正在写入 snell 配置..." protocol_install_finalize_snell_config || {
             red "snell-v5 配置写入失败"
-            pause
             return
         }
     else
         protocol_install_finalize_snell_config || {
             red "snell-v5 配置写入失败"
-            pause
             return
         }
     fi
 
-    echo
     local st_enable=""
     if ! read_prompt st_enable "是否配置 shadow-tls-v3 保护此端口? [y/n]: "; then
         st_enable=""
@@ -1371,5 +1357,4 @@ EOF
     else
         protocol_install_apply_snell_change
     fi
-    pause
 }

@@ -55,10 +55,6 @@ detect_server_ip_stack() {
     printf '%s\n' "$PROXY_IP_STACK_CACHE_VALUE"
 }
 
-pause_unless_cancelled() {
-    local rc="${1:-0}"
-    (( rc == 130 )) || pause
-}
 
 backup_conf_file() {
     local conf_file="$1"
@@ -403,25 +399,7 @@ update_self() {
     }
 
     if [[ -z "$update_mode" ]]; then
-        ui_clear
-        proxy_menu_header "脚本更新"
-        echo "1. release"
-        echo "2. repo"
-        proxy_menu_rule "═"
-        local choice=""
-        if ! read_prompt choice "选择序号(回车取消): "; then
-            return 0
-        fi
-        [[ -z "$choice" ]] && return 0
-        case "$choice" in
-            1) update_mode="release" ;;
-            2) update_mode="repo" ;;
-            *)
-                red "输入无效"
-                pause
-                return 1
-                ;;
-        esac
+        update_mode="repo"
     fi
 
     if [[ ! -f "$updater" ]]; then

@@ -236,7 +236,7 @@ routing_menu_view_cache_print() {
 
 configure_direct_outbound_menu() {
     local conf_file
-    conf_file="$(routing_conf_file_or_warn)" || { pause; return 1; }
+    conf_file="$(routing_conf_file_or_warn)" || return 1
     ui_clear
     local current
     current="$(routing_get_direct_mode "$conf_file")"
@@ -270,7 +270,7 @@ configure_direct_outbound_menu() {
         4) new_mode="prefer_ipv6" ;;
         5) new_mode="as_is" ;;
         0|"") return 0 ;;
-        *) red "无效输入"; pause; return 1 ;;
+        *) red "无效输入"; return 1 ;;
     esac
 
     if routing_apply_direct_mode_to_conf "$conf_file" "$new_mode"; then
@@ -283,13 +283,12 @@ configure_direct_outbound_menu() {
     else
         red "更新直连出口失败"
     fi
-    pause
 }
 
 manage_chain_proxy() {
     local conf_file
-    conf_file="$(routing_conf_file_or_warn)" || { pause; return 1; }
-    routing_menu_support_ensure_chain_support_loaded || { pause; return 1; }
+    conf_file="$(routing_conf_file_or_warn)" || return 1
+    routing_menu_support_ensure_chain_support_loaded || return 1
 
     while :; do
         ui_clear
@@ -331,13 +330,11 @@ manage_chain_proxy() {
                 conf_file="$(routing_conf_file_or_warn)" || return 1
                 ;;
             3)
-                echo
                 if res_socks_print_node_lines; then
                     :
                 else
                     yellow "当前没有可用链式代理节点。"
                 fi
-                pause
                 ;;
             0|"") return 0 ;;
             *) red "无效输入"; sleep 1 ;;
@@ -348,7 +345,7 @@ manage_chain_proxy() {
 manage_routing_menu() {
     while :; do
         local conf_file
-        conf_file="$(routing_conf_file_or_warn)" || { pause; return 1; }
+        conf_file="$(routing_conf_file_or_warn)" || return 1
         # Pre-warm user selection context in background so option 2/4 responds
         # instantly when the user selects it.
         (
@@ -364,30 +361,30 @@ manage_routing_menu() {
         fi
         case "$routing_choice" in
             1)
-                routing_menu_support_ensure_chain_support_loaded || { pause; continue; }
+                routing_menu_support_ensure_chain_support_loaded || continue
                 manage_chain_proxy
                 ;;
             2)
-                routing_prepare_target_user_selection_context_with_spinner "$conf_file" "正在加载用户列表..." || { pause; continue; }
+                routing_prepare_target_user_selection_context_with_spinner "$conf_file" "正在加载用户列表..." || continue
                 local target_name
                 target_name="$(routing_select_target_user_name "选择用户名 (配置分流)" "$conf_file")"
                 [[ -z "$target_name" ]] && continue
-                [[ "$target_name" == "__none__" ]] && { yellow "当前没有可管理的用户名。"; pause; continue; }
+                [[ "$target_name" == "__none__" ]] && { yellow "当前没有可管理的用户名。"; continue; }
                 [[ "$target_name" == "__invalid__" ]] && { red "输入无效"; sleep 1; continue; }
-                routing_prepare_full_support_with_spinner "正在加载分流配置..." || { pause; continue; }
+                routing_prepare_full_support_with_spinner "正在加载分流配置..." || continue
                 routing_with_user_context "$target_name" configure_routing_rules_menu
                 ;;
             3)
                 configure_direct_outbound_menu
                 ;;
             4)
-                routing_prepare_target_user_selection_context_with_spinner "$conf_file" "正在加载用户列表..." || { pause; continue; }
+                routing_prepare_target_user_selection_context_with_spinner "$conf_file" "正在加载用户列表..." || continue
                 local target_name
                 target_name="$(routing_select_target_user_name "选择用户名 (测试分流)" "$conf_file")"
                 [[ -z "$target_name" ]] && continue
-                [[ "$target_name" == "__none__" ]] && { yellow "当前没有可管理的用户名。"; pause; continue; }
+                [[ "$target_name" == "__none__" ]] && { yellow "当前没有可管理的用户名。"; continue; }
                 [[ "$target_name" == "__invalid__" ]] && { red "输入无效"; sleep 1; continue; }
-                routing_prepare_full_support_with_spinner "正在准备测试环境..." || { pause; continue; }
+                routing_prepare_full_support_with_spinner "正在准备测试环境..." || continue
                 local render_file=""
                 render_file="$(routing_render_to_temp_file)"
                 {
@@ -396,7 +393,6 @@ manage_routing_menu() {
                     routing_with_user_context "$target_name" test_routing_effect "$conf_file"
                 } >"$render_file"
                 routing_print_rendered_file "$render_file"
-                pause
                 ;;
             0|"") return 0 ;;
             *) red "无效输入"; sleep 1 ;;
