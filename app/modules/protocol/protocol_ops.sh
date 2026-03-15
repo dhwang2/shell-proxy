@@ -79,7 +79,7 @@ proxy_protocol_remove_empty_entry() {
                     ;;
             esac
 
-            if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+            if [[ -s "$tmp_json" ]]; then
                 backup_conf_file "$conf_file"
                 mv "$tmp_json" "$conf_file"
                 changed=1

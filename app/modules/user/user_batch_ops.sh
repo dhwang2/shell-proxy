@@ -27,7 +27,7 @@ fi
 ensure_user_meta_db() {
     proxy_user_meta_db_ensure
     proxy_user_template_db_ensure
-    if [[ ! -f "$USER_ROUTE_RULES_DB" ]] || ! jq . "$USER_ROUTE_RULES_DB" >/dev/null 2>&1; then
+    if [[ ! -f "$USER_ROUTE_RULES_DB" ]] || ! [[ -s "$USER_ROUTE_RULES_DB" ]]; then
         printf '%s\n' '[]' > "$USER_ROUTE_RULES_DB"
     fi
 }
@@ -38,7 +38,7 @@ user_meta_clear_key() {
     local tmp_json
     tmp_json="$(mktemp)"
     jq --arg k "$key" 'del(.disabled[$k]) | del(.expiry[$k]) | del(.route[$k]) | del(.template[$k]) | del(.name[$k])' "$USER_META_DB" > "$tmp_json" 2>/dev/null || true
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$USER_META_DB"
     else
         rm -f "$tmp_json"
@@ -64,7 +64,7 @@ begin_user_group_batch() {
 
 commit_user_group_conf() {
     local tmp_json="$1"
-    if [[ ! -s "$tmp_json" ]] || ! jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ ! -s "$tmp_json" ]]; then
         rm -f "$tmp_json"
         return 1
     fi
@@ -132,7 +132,7 @@ user_meta_update_disabled_name() {
         end
         | .name[$k] = $n
     ' "$USER_META_DB" > "$tmp_json" 2>/dev/null || true
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$USER_META_DB"
         return 0
     fi

@@ -366,7 +366,7 @@ routing_sync_required_rule_sets() {
           )
     ' "$conf_file" > "$tmp_json" 2>/dev/null || true
 
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         if ! cmp -s "$tmp_json" "$conf_file"; then
             mv "$tmp_json" "$conf_file"
             return 10

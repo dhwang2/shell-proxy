@@ -1035,7 +1035,7 @@ proxy_append_user_to_existing_inbound() {
             ;;
     esac
 
-    if [[ ! -s "$tmp_json" ]] || ! jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ ! -s "$tmp_json" ]]; then
         rm -f "$tmp_json"
         return 1
     fi

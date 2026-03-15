@@ -289,3 +289,11 @@
   - [x] Removed protocol count from user list and uninstall list displays.
   - [x] Simplified reuse messages; added numbered SS encryption method selector with stderr output.
   - [x] Re-validated with `bash -n`; deployed and verified on `gcp-oregon`.
+
+- [x] **u-2-119 perf: reduce jq fork overhead for e2-micro performance (2026-03-15)**
+  - [x] Phase 1: Removed 32 redundant `jq .` post-mutation validation forks across 11 files — jq output is always valid JSON if exit code was 0.
+  - [x] Phase 2: Merged check-then-mutate pairs — `proxy_user_group_add` grep fast-path, `routing_ensure_state_db` bash builtin read, `proxy_user_meta_db_ensure` guard simplified.
+  - [x] Phase 3: Replaced static `jq -nc` with heredocs/printf — `auto_rule_set_catalog_json` literal, `routing_sync_dns_compute_context` delimited string, snell user JSON inline bash.
+  - [x] Phase 4: Merged multi-field extractions — `ensure_singbox_auto_config` dual-read into single `@tsv` jq.
+  - [x] Code review fixes: re-added grep fast-path for existing groups, added backslash escaping to snell JSON, replaced `head -c 1` with `read -r -n 1`, inlined dead `routing_sync_dns_context_fields`, renamed `context_json` to `context_delimited`.
+  - [x] Re-validated with `bash -n` on all 12 modified files.

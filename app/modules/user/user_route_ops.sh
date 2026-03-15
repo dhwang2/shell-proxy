@@ -164,7 +164,7 @@ proxy_user_remove_active_member_from_conf() {
             ;;
     esac
 
-    if [[ ! -s "$tmp_json" ]] || ! jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ ! -s "$tmp_json" ]]; then
         rm -f "$tmp_json"
         return 1
     fi
@@ -259,8 +259,7 @@ proxy_user_route_purge_deleted_name_state() {
             | map(prune_target_user)
             | map(select(keep_rule))
         ' "$USER_ROUTE_RULES_DB_FILE" >"$tmp_json" 2>/dev/null \
-            && [[ -s "$tmp_json" ]] \
-            && jq . "$tmp_json" >/dev/null 2>&1; then
+            && [[ -s "$tmp_json" ]]; then
             if ! cmp -s "$tmp_json" "$USER_ROUTE_RULES_DB_FILE"; then
                 mv "$tmp_json" "$USER_ROUTE_RULES_DB_FILE"
                 route_db_changed=1
@@ -300,8 +299,7 @@ proxy_user_route_purge_deleted_name_state() {
                 | map(select(keep_rule))
             )
         ' "$conf_file" >"$tmp_json" 2>/dev/null \
-            && [[ -s "$tmp_json" ]] \
-            && jq . "$tmp_json" >/dev/null 2>&1; then
+            && [[ -s "$tmp_json" ]]; then
             if ! cmp -s "$tmp_json" "$conf_file"; then
                 backup_conf_file "$conf_file"
                 mv "$tmp_json" "$conf_file"
@@ -964,7 +962,7 @@ sync_user_template_route_rules() {
         route_db_meta_fields_precheck="$(routing_user_template_route_rules_meta_read "$(routing_user_template_route_db_meta_file)" "$route_db_fp_before" 2>/dev/null || true)"
     fi
     if [[ ! -f "$USER_ROUTE_RULES_DB_FILE" ]] \
-        || { [[ -z "$route_db_meta_fields_precheck" ]] && ! jq . "$USER_ROUTE_RULES_DB_FILE" >/dev/null 2>&1; }; then
+        || { [[ -z "$route_db_meta_fields_precheck" ]] && ! [[ -s "$USER_ROUTE_RULES_DB_FILE" ]]; }; then
         printf '%s\n' '[]' > "$USER_ROUTE_RULES_DB_FILE"
         route_db_fp_before="$(calc_file_fingerprint "$USER_ROUTE_RULES_DB_FILE" 2>/dev/null || echo "0:0")"
         route_db_meta_fields_precheck="$(routing_user_template_route_rules_meta_read "$(routing_user_template_route_db_meta_file)" "$route_db_fp_before" 2>/dev/null || true)"

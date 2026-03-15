@@ -180,40 +180,9 @@ routing_autoconfig_ensure_user_route_sync_loaded() {
 }
 
 auto_rule_set_catalog_json() {
-    jq -nc '[
-        {tag: "geosite-openai", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/openai.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-anthropic", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/anthropic.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-category-ai-!cn", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-ai-!cn.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-ai-!cn", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-ai-!cn.srs", download_detour: "🐸 direct"},
-        {tag: "geoip-ai", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/ai.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-google", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/google.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-netflix", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/netflix.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-disney", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/disney.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-mytvsuper", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/mytvsuper.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-youtube", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/youtube.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-spotify", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/spotify.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-tiktok", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/tiktok.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-telegram", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/telegram.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-category-ads-all", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-ads-all.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-twitter", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/twitter.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-whatsapp", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/whatsapp.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-facebook", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/facebook.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-discord", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/discord.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-instagram", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/instagram.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-reddit", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/reddit.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-linkedin", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/linkedin.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-paypal", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/paypal.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-microsoft", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/microsoft.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-xai", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/xai.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-meta", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/meta.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-messenger", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/messenger.srs", download_detour: "🐸 direct"},
-        {tag: "geosite-github", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/github.srs", download_detour: "🐸 direct"},
-        {tag: "geoip-google", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/google.srs", download_detour: "🐸 direct"},
-        {tag: "geoip-netflix", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/netflix.srs", download_detour: "🐸 direct"},
-        {tag: "geoip-twitter", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/twitter.srs", download_detour: "🐸 direct"},
-        {tag: "geoip-telegram", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/telegram.srs", download_detour: "🐸 direct"},
-        {tag: "geoip-facebook", type: "remote", format: "binary", url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/facebook.srs", download_detour: "🐸 direct"}
-    ]'
+    cat <<'CATALOG_EOF'
+[{"tag":"geosite-openai","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/openai.srs","download_detour":"🐸 direct"},{"tag":"geosite-anthropic","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/anthropic.srs","download_detour":"🐸 direct"},{"tag":"geosite-category-ai-!cn","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-ai-!cn.srs","download_detour":"🐸 direct"},{"tag":"geosite-ai-!cn","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-ai-!cn.srs","download_detour":"🐸 direct"},{"tag":"geoip-ai","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/ai.srs","download_detour":"🐸 direct"},{"tag":"geosite-google","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/google.srs","download_detour":"🐸 direct"},{"tag":"geosite-netflix","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/netflix.srs","download_detour":"🐸 direct"},{"tag":"geosite-disney","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/disney.srs","download_detour":"🐸 direct"},{"tag":"geosite-mytvsuper","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/mytvsuper.srs","download_detour":"🐸 direct"},{"tag":"geosite-youtube","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/youtube.srs","download_detour":"🐸 direct"},{"tag":"geosite-spotify","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/spotify.srs","download_detour":"🐸 direct"},{"tag":"geosite-tiktok","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/tiktok.srs","download_detour":"🐸 direct"},{"tag":"geosite-telegram","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/telegram.srs","download_detour":"🐸 direct"},{"tag":"geosite-category-ads-all","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-ads-all.srs","download_detour":"🐸 direct"},{"tag":"geosite-twitter","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/twitter.srs","download_detour":"🐸 direct"},{"tag":"geosite-whatsapp","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/whatsapp.srs","download_detour":"🐸 direct"},{"tag":"geosite-facebook","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/facebook.srs","download_detour":"🐸 direct"},{"tag":"geosite-discord","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/discord.srs","download_detour":"🐸 direct"},{"tag":"geosite-instagram","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/instagram.srs","download_detour":"🐸 direct"},{"tag":"geosite-reddit","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/reddit.srs","download_detour":"🐸 direct"},{"tag":"geosite-linkedin","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/linkedin.srs","download_detour":"🐸 direct"},{"tag":"geosite-paypal","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/paypal.srs","download_detour":"🐸 direct"},{"tag":"geosite-microsoft","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/microsoft.srs","download_detour":"🐸 direct"},{"tag":"geosite-xai","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/xai.srs","download_detour":"🐸 direct"},{"tag":"geosite-meta","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/meta.srs","download_detour":"🐸 direct"},{"tag":"geosite-messenger","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/messenger.srs","download_detour":"🐸 direct"},{"tag":"geosite-github","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/github.srs","download_detour":"🐸 direct"},{"tag":"geoip-google","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/google.srs","download_detour":"🐸 direct"},{"tag":"geoip-netflix","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/netflix.srs","download_detour":"🐸 direct"},{"tag":"geoip-twitter","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/twitter.srs","download_detour":"🐸 direct"},{"tag":"geoip-telegram","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/telegram.srs","download_detour":"🐸 direct"},{"tag":"geoip-facebook","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/facebook.srs","download_detour":"🐸 direct"}]
+CATALOG_EOF
 }
 
 sync_route_rule_set_catalog() {
@@ -251,7 +220,7 @@ sync_route_rule_set_catalog() {
           )
     ' "$conf_file" > "$tmp_json" 2>/dev/null || true
 
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         if ! cmp -s "$tmp_json" "$conf_file"; then
             mv "$tmp_json" "$conf_file"
             return 10
@@ -326,10 +295,15 @@ ensure_singbox_auto_config() {
     fi
 
     old_final="🐸 direct"
+    old_inbounds="[]"
     if [[ -n "$old_conf" && -f "$old_conf" ]]; then
-        old_final="$(jq -r '.route.final // "🐸 direct"' "$old_conf" 2>/dev/null || echo "🐸 direct")"
+        local _old_fields
+        _old_fields="$(jq -r '[(.route.final // "🐸 direct"), (.inbounds // [] | tojson)] | @tsv' "$old_conf" 2>/dev/null || true)"
+        if [[ -n "$_old_fields" ]]; then
+            IFS=$'\t' read -r old_final old_inbounds <<<"$_old_fields"
+        fi
     fi
-    [[ "$old_final" == "null" ]] && old_final="🐸 direct"
+    [[ -z "$old_final" || "$old_final" == "null" ]] && old_final="🐸 direct"
     if [[ "$old_final" != "🐸 direct" ]] && ! is_res_socks_outbound_tag "$old_final"; then
         old_final="🐸 direct"
     fi
@@ -344,8 +318,7 @@ ensure_singbox_auto_config() {
         return 1
     fi
 
-    if [[ -n "$old_conf" && -f "$old_conf" ]]; then
-        old_inbounds="$(jq -c '.inbounds // []' "$old_conf" 2>/dev/null || echo "[]")"
+    if [[ -n "$old_conf" && -f "$old_conf" && "$old_inbounds" != "[]" ]]; then
         base_json="$(echo "$base_json" | jq -c --argjson inb "${old_inbounds:-[]}" '.inbounds = $inb' 2>/dev/null || true)"
     fi
 
@@ -376,7 +349,7 @@ ensure_singbox_auto_config() {
         jq --argjson rr "$route_rules_json" '
             .route.rules = ((.route.rules // []) + $rr)
         ' "$target_conf" > "$tmp_rules" 2>/dev/null || true
-        if [[ -s "$tmp_rules" ]] && jq . "$tmp_rules" >/dev/null 2>&1; then
+        if [[ -s "$tmp_rules" ]]; then
             mv "$tmp_rules" "$target_conf"
         else
             rm -f "$tmp_rules"

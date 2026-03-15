@@ -315,7 +315,7 @@ sanitize_singbox_inbound_uuids() {
         return 1
     }
 
-    if ! jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ ! -s "$tmp_json" ]]; then
         rm -f "$tmp_json"
         return 1
     fi
@@ -447,7 +447,7 @@ sanitize_singbox_inbound_user_names() {
         return 1
     }
 
-    if ! jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ ! -s "$tmp_json" ]]; then
         rm -f "$tmp_json"
         return 1
     fi

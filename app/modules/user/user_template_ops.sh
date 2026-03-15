@@ -81,7 +81,7 @@ proxy_user_template_db_ensure() {
         fi
     fi
 
-    if [[ ! -f "$USER_TEMPLATE_DB_FILE" ]] || ! jq . "$USER_TEMPLATE_DB_FILE" >/dev/null 2>&1; then
+    if [[ ! -f "$USER_TEMPLATE_DB_FILE" ]] || [[ ! -s "$USER_TEMPLATE_DB_FILE" ]]; then
         printf '%s\n' '{"schema":1,"templates":{}}' > "$USER_TEMPLATE_DB_FILE"
         PROXY_USER_TEMPLATE_DB_READY_FP="$(calc_file_fingerprint "$USER_TEMPLATE_DB_FILE" 2>/dev/null || echo "0:0")"
         proxy_user_template_db_mark_ready "$PROXY_USER_TEMPLATE_DB_READY_FP" >/dev/null 2>&1 || true
@@ -193,7 +193,7 @@ proxy_user_template_create() {
             created_at: $created_at
         }
     ' "$USER_TEMPLATE_DB_FILE" > "$tmp_json" 2>/dev/null || true
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$USER_TEMPLATE_DB_FILE"
         proxy_user_template_db_refresh_caches
         echo "$template_id"
@@ -254,7 +254,7 @@ proxy_user_template_set_rules() {
             .templates[$id].rules = (if ($rules | type) == "array" then $rules else [] end)
         end
     ' "$USER_TEMPLATE_DB_FILE" > "$tmp_json" 2>/dev/null || true
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$USER_TEMPLATE_DB_FILE"
         proxy_user_template_db_refresh_caches
         return 0

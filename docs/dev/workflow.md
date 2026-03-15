@@ -955,3 +955,23 @@ Measured 6-protocol real-menu install for user `u193x1` -- before fix: `proto_5(
 - **Verification**:
   - `bash -n` passed on all 5 modified files.
   - Deployed to `gcp-oregon`, rebuilt bundles. Confirmed: no ghost "user" in user list, clean prompts during protocol install, SS encryption selector works correctly.
+
+##### u-2-119 perf: reduce jq fork overhead for e2-micro performance (2026-03-15)
+> **Target**: Eliminate redundant jq forks to reduce iowait on GCP e2-micro (970MB RAM, no swap, 94.7% iowait observed).
+
+- **Changes**:
+  1. Phase 1 — removed 32 redundant `jq . "$tmp_json" >/dev/null 2>&1` post-mutation validation forks across 11 files; jq output is always valid JSON when exit code is 0, so `[[ -s "$tmp_json" ]]` suffices.
+  2. Phase 2a — `proxy_user_group_add()`: merged exists-check + mutate into single idempotent jq; re-added `grep -q` + `jq -e` fast-path for common case (existing groups in batch loops).
+  3. Phase 2b — `routing_ensure_state_db()`: replaced `jq -e 'type=="array"'` with bash builtin `read -r -n 1` to check first byte.
+  4. Phase 2c — `proxy_user_meta_db_ensure()` and `proxy_user_template_db_ensure()`: simplified guards from `jq .` to `[[ ! -s ]]`.
+  5. Phase 3a — `auto_rule_set_catalog_json()`: replaced `jq -nc` building 31-entry static array with literal heredoc.
+  6. Phase 3b — `routing_sync_dns_compute_context()`: replaced `jq -cn` with `printf` using `\x1f`-delimited fields.
+  7. Phase 3c — removed dead passthrough `routing_sync_dns_context_fields()`; inlined at 2 call sites; renamed `context_json` → `context_delimited`.
+  8. Phase 3d — snell user JSON in `proxy_user_collect_membership_lines_uncached()`: replaced `jq -nc --arg` with inline bash string construction with proper backslash + quote escaping.
+  9. Phase 4a — `ensure_singbox_auto_config()`: merged two sequential `$old_conf` reads into single jq with `@tsv` output.
+
+- **Files modified** (12): `user_meta_ops.sh`, `routing_core_ops.sh`, `routing_res_socks_ops.sh`, `user_route_ops.sh`, `user_batch_ops.sh`, `config_ops.sh`, `user_template_ops.sh`, `routing_autoconfig_ops.sh`, `routing_preset_ops.sh`, `protocol_install_singbox_ops.sh`, `protocol_ops.sh`, `user_membership_ops.sh`.
+
+- **Verification**:
+  - `bash -n` passed on all 12 modified files.
+  - Pure internal logic changes with zero UI impact; all mutations produce identical output.

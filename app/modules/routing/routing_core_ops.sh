@@ -44,7 +44,9 @@ routing_ensure_state_db() {
     if [[ ! -f "$ROUTING_RULES_DB" ]]; then
         echo "[]" > "$ROUTING_RULES_DB"
     fi
-    if ! jq -e 'type=="array"' "$ROUTING_RULES_DB" >/dev/null 2>&1; then
+    local _first_byte=""
+    read -r -n 1 _first_byte < "$ROUTING_RULES_DB" 2>/dev/null || true
+    if [[ "$_first_byte" != "[" ]]; then
         echo "[]" > "$ROUTING_RULES_DB"
     fi
 }
@@ -265,7 +267,7 @@ routing_apply_direct_mode_to_conf() {
         ' "$conf_file" > "$tmp_json" 2>/dev/null || true
     fi
 
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$conf_file"
         echo "$mode" > "$DIRECT_IP_VERSION_FILE"
         return 0
@@ -339,7 +341,7 @@ routing_apply_rules_change() {
         )
     ' "$conf_file" > "$tmp_json" 2>/dev/null || true
 
-    if [[ ! -s "$tmp_json" ]] || ! jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ ! -s "$tmp_json" ]]; then
         rm -f "$tmp_json"
         return 1
     fi
@@ -349,7 +351,7 @@ routing_apply_rules_change() {
         rm -f "$tmp_json"
         return 1
     fi
-    if [[ ! -s "$tmp_json" ]] || ! jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ ! -s "$tmp_json" ]]; then
         rm -f "$tmp_json"
         return 1
     fi
@@ -394,32 +396,11 @@ routing_sync_dns_compute_context() {
         dns_final="$(res_socks_dns_tag_for_outbound "$route_final" 2>/dev/null || echo "$RES_SOCKS_DNS_TAG")"
     fi
 
-    jq -cn \
-        --argjson chain_ready "$chain_ready" \
-        --arg dns_strategy "$dns_strategy" \
-        --arg dns_final "$dns_final" \
-        --arg public_dns_tag "$public_dns_tag" '
-        {
-            chain_ready: $chain_ready,
-            dns_strategy: $dns_strategy,
-            dns_final: $dns_final,
-            public_dns_tag: $public_dns_tag
-        }
-    '
-}
-
-routing_sync_dns_context_fields() {
-    local context_json="${1:-}"
-    [[ -n "$context_json" ]] || return 1
-
-    jq -r --arg sep "$ROUTING_SYNC_DNS_FIELD_SEP" '
-        [
-            ((.chain_ready // 0) | tostring),
-            (.dns_strategy // ""),
-            (.dns_final // ""),
-            (.public_dns_tag // "")
-        ] | join($sep)
-    ' <<<"$context_json" 2>/dev/null
+    printf '%s%s%s%s%s%s%s\n' \
+        "$chain_ready" "$ROUTING_SYNC_DNS_FIELD_SEP" \
+        "$dns_strategy" "$ROUTING_SYNC_DNS_FIELD_SEP" \
+        "$dns_final" "$ROUTING_SYNC_DNS_FIELD_SEP" \
+        "$public_dns_tag"
 }
 
 routing_sync_dns_rules_jq_filter() {
@@ -520,11 +501,11 @@ EOF
 
 routing_sync_dns_build_rules() {
     local conf_file="$1"
-    local context_json="${2:-}"
-    local context_fields chain_ready public_dns_tag dns_rules_json jq_filter
+    local context_delimited="${2:-}"
+    local chain_ready public_dns_tag dns_rules_json jq_filter
 
-    context_fields="$(routing_sync_dns_context_fields "$context_json")" || return 1
-    IFS="$ROUTING_SYNC_DNS_FIELD_SEP" read -r chain_ready _ _ public_dns_tag <<<"$context_fields"
+    [[ -n "$context_delimited" ]] || return 1
+    IFS="$ROUTING_SYNC_DNS_FIELD_SEP" read -r chain_ready _ _ public_dns_tag <<<"$context_delimited"
     jq_filter="$(routing_sync_dns_rules_jq_filter)"
 
     dns_rules_json="$(jq -c \
@@ -598,14 +579,14 @@ EOF
 
 routing_sync_dns_apply_context() {
     local conf_file="$1"
-    local context_json="${2:-}"
+    local context_delimited="${2:-}"
     local dns_rules_json="${3:-[]}"
-    local context_fields chain_ready dns_strategy dns_final public_dns_tag tmp_json
+    local chain_ready dns_strategy dns_final public_dns_tag tmp_json
     local public_dns_servers_json res_dns_servers_json base_route_rules_json jq_filter
 
     [[ -n "$conf_file" && -f "$conf_file" ]] || return 1
-    context_fields="$(routing_sync_dns_context_fields "$context_json")" || return 1
-    IFS="$ROUTING_SYNC_DNS_FIELD_SEP" read -r chain_ready dns_strategy dns_final public_dns_tag <<<"$context_fields"
+    [[ -n "$context_delimited" ]] || return 1
+    IFS="$ROUTING_SYNC_DNS_FIELD_SEP" read -r chain_ready dns_strategy dns_final public_dns_tag <<<"$context_delimited"
 
     public_dns_servers_json="$(routing_sync_dns_public_servers_json)"
     [[ -n "$public_dns_servers_json" ]] || public_dns_servers_json="[]"
@@ -626,7 +607,7 @@ routing_sync_dns_apply_context() {
         --argjson base_route_rules "$base_route_rules_json" \
         "$jq_filter" "$conf_file" > "$tmp_json" 2>/dev/null || true
 
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$conf_file"
         return 0
     fi
@@ -636,15 +617,15 @@ routing_sync_dns_apply_context() {
 
 sync_dns_with_route() {
     local conf_file="$1"
-    local context_json dns_rules_json
+    local context_delimited dns_rules_json
     [[ -n "$conf_file" && -f "$conf_file" ]] || return 1
 
-    context_json="$(routing_sync_dns_compute_context "$conf_file")" || return 1
+    context_delimited="$(routing_sync_dns_compute_context "$conf_file")" || return 1
 
-    dns_rules_json="$(routing_sync_dns_build_rules "$conf_file" "$context_json")" || return 1
+    dns_rules_json="$(routing_sync_dns_build_rules "$conf_file" "$context_delimited")" || return 1
     routing_sync_dns_apply_context \
         "$conf_file" \
-        "$context_json" \
+        "$context_delimited" \
         "$dns_rules_json"
 }
 
@@ -824,7 +805,7 @@ drop_acme_route_rules() {
           ]
     ' "$conf_file" > "$tmp_json" 2>/dev/null || true
 
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$conf_file"
         return 0
     fi

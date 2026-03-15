@@ -338,7 +338,7 @@ ensure_res_socks_nodes_db() {
     fi
     local tmp_json
     tmp_json="$(mktemp)"
-    if res_socks_normalize_nodes_db "$RES_SOCKS_NODES_FILE" "$tmp_json" && [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if res_socks_normalize_nodes_db "$RES_SOCKS_NODES_FILE" "$tmp_json" && [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$RES_SOCKS_NODES_FILE"
         chmod 600 "$RES_SOCKS_NODES_FILE" 2>/dev/null || true
         res_socks_reset_runtime_cache
@@ -375,7 +375,7 @@ res_socks_add_node() {
             password: $password
         }])
     ' "$RES_SOCKS_NODES_FILE" > "$tmp_json" 2>/dev/null || true
-    if [[ ! -s "$tmp_json" ]] || ! jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ ! -s "$tmp_json" ]]; then
         rm -f "$tmp_json"
         return 1
     fi
@@ -391,7 +391,7 @@ res_socks_delete_node() {
     local tmp_json
     tmp_json="$(mktemp)"
     jq --arg id "$node_id" '.nodes = [(.nodes // [])[] | select((.id // "") != $id)]' "$RES_SOCKS_NODES_FILE" > "$tmp_json" 2>/dev/null || true
-    if [[ ! -s "$tmp_json" ]] || ! jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ ! -s "$tmp_json" ]]; then
         rm -f "$tmp_json"
         return 1
     fi
@@ -465,7 +465,7 @@ sync_res_socks_outbounds_to_conf() {
             + $outbounds
         )
     ' "$conf_file" > "$tmp_json" 2>/dev/null || true
-    if [[ ! -s "$tmp_json" ]] || ! jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ ! -s "$tmp_json" ]]; then
         rm -f "$tmp_json"
         return 1
     fi

@@ -101,7 +101,7 @@ proxy_user_meta_db_ensure() {
         fi
     fi
 
-    if [[ ! -f "$USER_META_DB_FILE" ]] || ! jq . "$USER_META_DB_FILE" >/dev/null 2>&1; then
+    if [[ ! -f "$USER_META_DB_FILE" ]] || [[ ! -s "$USER_META_DB_FILE" ]]; then
         printf '%s\n' '{"schema":3,"disabled":{},"expiry":{},"route":{},"template":{},"name":{},"groups":{}}' > "$USER_META_DB_FILE"
         PROXY_USER_META_DB_READY_FP="$(calc_file_fingerprint "$USER_META_DB_FILE" 2>/dev/null || echo "0:0")"
         proxy_user_meta_db_mark_ready "$PROXY_USER_META_DB_READY_FP" >/dev/null 2>&1 || true
@@ -245,7 +245,7 @@ proxy_user_meta_set_name() {
     local tmp_json
     tmp_json="$(mktemp)"
     jq --arg k "$key" --arg v "$value" '.name[$k] = $v' "$USER_META_DB_FILE" > "$tmp_json" 2>/dev/null || true
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$USER_META_DB_FILE"
         proxy_user_meta_db_refresh_caches
         return 0
@@ -278,22 +278,18 @@ proxy_user_group_add() {
     [[ -n "$name" ]] || return 1
 
     proxy_user_meta_db_ensure
-    if jq -e --arg name "$name" '(.groups[$name] | type) == "object"' "$USER_META_DB_FILE" >/dev/null 2>&1; then
+    # Fast path: skip jq fork if group already exists (common case in batch loops)
+    if grep -q "\"${name}\"" "$USER_META_DB_FILE" 2>/dev/null \
+        && jq -e --arg name "$name" '(.groups[$name] | type) == "object"' "$USER_META_DB_FILE" >/dev/null 2>&1; then
         return 0
     fi
     local created_at tmp_json
     created_at="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date +%Y-%m-%dT%H:%M:%SZ)"
     tmp_json="$(mktemp)"
     jq --arg name "$name" --arg created_at "$created_at" '
-        .groups[$name] = (
-            if (.groups[$name] | type) == "object" then
-                .groups[$name]
-            else
-                {created_at:$created_at}
-            end
-        )
+        .groups[$name] = {created_at:$created_at}
     ' "$USER_META_DB_FILE" > "$tmp_json" 2>/dev/null || true
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$USER_META_DB_FILE"
         proxy_user_meta_db_refresh_caches
         return 0
@@ -311,7 +307,7 @@ proxy_user_group_delete() {
     local tmp_json
     tmp_json="$(mktemp)"
     jq --arg name "$name" 'del(.groups[$name])' "$USER_META_DB_FILE" > "$tmp_json" 2>/dev/null || true
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$USER_META_DB_FILE"
         proxy_user_meta_db_refresh_caches
         return 0
@@ -343,7 +339,7 @@ proxy_user_group_rename() {
         )
         | del(.groups[$old])
     ' "$USER_META_DB_FILE" > "$tmp_json" 2>/dev/null || true
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$USER_META_DB_FILE"
         proxy_user_meta_db_refresh_caches
         return 0
@@ -366,7 +362,7 @@ proxy_user_meta_set_template() {
     local tmp_json
     tmp_json="$(mktemp)"
     jq --arg k "$key" --arg v "$value" '.template[$k] = $v' "$USER_META_DB_FILE" > "$tmp_json" 2>/dev/null || true
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$USER_META_DB_FILE"
         proxy_user_meta_db_refresh_caches
         return 0
@@ -410,7 +406,7 @@ proxy_user_meta_apply_protocol_membership() {
         ' "$USER_META_DB_FILE" > "$tmp_json" 2>/dev/null || true
     fi
 
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         if ! cmp -s "$tmp_json" "$USER_META_DB_FILE"; then
             mv "$tmp_json" "$USER_META_DB_FILE"
             proxy_user_meta_db_refresh_caches
@@ -461,7 +457,7 @@ proxy_user_meta_apply_protocol_memberships_batch() {
         )
     ' "$USER_META_DB_FILE" > "$tmp_json" 2>/dev/null || true
 
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         if ! cmp -s "$tmp_json" "$USER_META_DB_FILE"; then
             mv "$tmp_json" "$USER_META_DB_FILE"
             proxy_user_meta_db_refresh_caches
@@ -505,7 +501,7 @@ proxy_user_meta_apply_template_for_keys() {
     fi
     rm -f "$keys_file"
 
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         if ! cmp -s "$tmp_json" "$USER_META_DB_FILE"; then
             mv "$tmp_json" "$USER_META_DB_FILE"
             proxy_user_meta_db_refresh_caches
@@ -609,7 +605,7 @@ proxy_user_meta_clear_key() {
     local tmp_json
     tmp_json="$(mktemp)"
     jq --arg k "$key" 'del(.disabled[$k]) | del(.expiry[$k]) | del(.route[$k]) | del(.template[$k]) | del(.name[$k])' "$USER_META_DB_FILE" > "$tmp_json" 2>/dev/null || true
-    if [[ -s "$tmp_json" ]] && jq . "$tmp_json" >/dev/null 2>&1; then
+    if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$USER_META_DB_FILE"
         proxy_user_meta_db_refresh_caches
         return 0
