@@ -181,6 +181,67 @@ subscription_share_view_cache_is_fresh() {
     [[ "$cached_fp" == "$expected_fp" ]]
 }
 
+_subscription_share_render_body() {
+    local host="${1:-}" conf_file="${2:-}"
+    local -n _users_ref="${3:-}" _sing_ref="${4:-}" _surge_ref="${5:-}"
+
+    local user_name idx last_idx
+
+    print_share_section_title "[ 协议链接 ]" "36;1"
+    if (( ${#_users_ref[@]} == 0 )); then
+        yellow "当前无可用用户名或协议链接"
+    else
+        local user_sing_links
+        last_idx=$(( ${#_users_ref[@]} - 1 ))
+        for idx in "${!_users_ref[@]}"; do
+            user_name="${_users_ref[$idx]}"
+            print_share_user_title "$user_name"
+            user_sing_links="${_sing_ref[$user_name]:-}"
+            if [[ -n "${user_sing_links// }" ]]; then
+                render_links_pretty "$user_sing_links"
+            else
+                yellow "  当前无可用协议链接"
+            fi
+            if (( idx < last_idx )); then
+                print_share_divider
+            fi
+        done
+    fi
+    echo
+    print_share_section_title "[ Surge 链接 ]" "35;1"
+    if (( ${#_users_ref[@]} == 0 )); then
+        yellow "当前无可用 Surge 协议链接"
+    else
+        local user_surge_links
+        last_idx=$(( ${#_users_ref[@]} - 1 ))
+        for idx in "${!_users_ref[@]}"; do
+            user_name="${_users_ref[$idx]}"
+            print_share_user_title "$user_name"
+            user_surge_links="${_surge_ref[$user_name]:-}"
+            if [[ -n "${user_surge_links// }" ]]; then
+                render_surge_links_compact "$user_surge_links" "  "
+            else
+                yellow "  当前无可用 Surge 协议链接"
+            fi
+            if (( idx < last_idx )); then
+                print_share_divider
+            else
+                echo
+            fi
+        done
+    fi
+    if ! surge_link_verbose_params_enabled; then
+        printf '\033[90m  %s\033[0m\n' "Surge 链接已关闭可选参数显式输出（SURGE_LINK_VERBOSE_PARAMS=off）。"
+    fi
+
+    if shadowtls_join_code_enabled; then
+        echo
+        print_share_section_title "[ ShadowTLS JOIN 码 ]" "33;1"
+        render_shadowtls_join_codes "$host" "$conf_file"
+        echo
+    fi
+}
+
 subscription_share_render_to_file() {
     local output_file="${1:-}" host="${2:-}" conf_file="${3:-}"
     [[ -n "$output_file" ]] || return 1
@@ -192,67 +253,8 @@ subscription_share_render_to_file() {
     subscription_render_cache_load_user_map "$(subscription_render_cache_user_sing_map_file)" "sing_links_by_user" >/dev/null 2>&1 || true
     subscription_render_cache_load_user_map "$(subscription_render_cache_user_surge_map_file)" "surge_links_by_user" >/dev/null 2>&1 || true
 
-    {
-        print_share_section_title "[ 协议链接 ]" "36;1"
-        if (( ${#share_users[@]} == 0 )); then
-            yellow "当前无可用用户名或协议链接"
-        else
-            local user_name user_sing_links idx last_share_user_idx
-            last_share_user_idx=$(( ${#share_users[@]} - 1 ))
-            for idx in "${!share_users[@]}"; do
-                user_name="${share_users[$idx]}"
-                print_share_user_title "$user_name"
-                user_sing_links="${sing_links_by_user[$user_name]:-}"
-                if [[ -n "${user_sing_links// }" ]]; then
-                    render_links_pretty "$user_sing_links"
-                else
-                    yellow "  当前无可用协议链接"
-                fi
-                if (( idx < last_share_user_idx )); then
-                    print_share_divider
-                fi
-            done
-        fi
-        echo
-        print_share_section_title "[ Surge 链接 ]" "35;1"
-        local -a surge_notes=()
-        if ! surge_link_verbose_params_enabled; then
-            surge_notes+=("Surge 链接已关闭可选参数显式输出（SURGE_LINK_VERBOSE_PARAMS=off）。")
-        fi
-        if (( ${#share_users[@]} == 0 )); then
-            yellow "当前无可用 Surge 协议链接"
-        else
-            local user_surge_links note_idx
-            last_share_user_idx=$(( ${#share_users[@]} - 1 ))
-            for idx in "${!share_users[@]}"; do
-                user_name="${share_users[$idx]}"
-                print_share_user_title "$user_name"
-                user_surge_links="${surge_links_by_user[$user_name]:-}"
-                if [[ -n "${user_surge_links// }" ]]; then
-                    render_surge_links_compact "$user_surge_links" "  "
-                else
-                    yellow "  当前无可用 Surge 协议链接"
-                fi
-                if (( idx < last_share_user_idx )); then
-                    print_share_divider
-                else
-                    echo
-                fi
-            done
-        fi
-        if (( ${#surge_notes[@]} > 0 )); then
-            for note_idx in "${!surge_notes[@]}"; do
-                printf '\033[90m  %s\033[0m\n' "${surge_notes[$note_idx]}"
-            done
-        fi
-
-        if shadowtls_join_code_enabled; then
-            echo
-            print_share_section_title "[ ShadowTLS JOIN 码 ]" "33;1"
-            render_shadowtls_join_codes "$host" "$conf_file"
-            echo
-        fi
-    } >"$output_file"
+    _subscription_share_render_body "$host" "$conf_file" \
+        share_users sing_links_by_user surge_links_by_user >"$output_file"
 }
 
 subscription_share_view_cache_rebuild() {
@@ -284,71 +286,8 @@ subscription_share_render_payload_to_file() {
     [[ -n "$output_file" && -n "$active_users_name" && -n "$sing_map_name" && -n "$surge_map_name" ]] || return 1
     subscription_share_ensure_full_support_loaded || return 1
 
-    local -n active_users_ref="$active_users_name"
-    local -n sing_map_ref="$sing_map_name"
-    local -n surge_map_ref="$surge_map_name"
-
-    {
-        print_share_section_title "[ 协议链接 ]" "36;1"
-        if (( ${#active_users_ref[@]} == 0 )); then
-            yellow "当前无可用用户名或协议链接"
-        else
-            local user_name user_sing_links idx last_share_user_idx
-            last_share_user_idx=$(( ${#active_users_ref[@]} - 1 ))
-            for idx in "${!active_users_ref[@]}"; do
-                user_name="${active_users_ref[$idx]}"
-                print_share_user_title "$user_name"
-                user_sing_links="${sing_map_ref[$user_name]:-}"
-                if [[ -n "${user_sing_links// }" ]]; then
-                    render_links_pretty "$user_sing_links"
-                else
-                    yellow "  当前无可用协议链接"
-                fi
-                if (( idx < last_share_user_idx )); then
-                    print_share_divider
-                fi
-            done
-        fi
-        echo
-        print_share_section_title "[ Surge 链接 ]" "35;1"
-        local -a surge_notes=()
-        if ! surge_link_verbose_params_enabled; then
-            surge_notes+=("Surge 链接已关闭可选参数显式输出（SURGE_LINK_VERBOSE_PARAMS=off）。")
-        fi
-        if (( ${#active_users_ref[@]} == 0 )); then
-            yellow "当前无可用 Surge 协议链接"
-        else
-            local user_surge_links note_idx
-            last_share_user_idx=$(( ${#active_users_ref[@]} - 1 ))
-            for idx in "${!active_users_ref[@]}"; do
-                user_name="${active_users_ref[$idx]}"
-                print_share_user_title "$user_name"
-                user_surge_links="${surge_map_ref[$user_name]:-}"
-                if [[ -n "${user_surge_links// }" ]]; then
-                    render_surge_links_compact "$user_surge_links" "  "
-                else
-                    yellow "  当前无可用 Surge 协议链接"
-                fi
-                if (( idx < last_share_user_idx )); then
-                    print_share_divider
-                else
-                    echo
-                fi
-            done
-        fi
-        if (( ${#surge_notes[@]} > 0 )); then
-            for note_idx in "${!surge_notes[@]}"; do
-                printf '\033[90m  %s\033[0m\n' "${surge_notes[$note_idx]}"
-            done
-        fi
-
-        if shadowtls_join_code_enabled; then
-            echo
-            print_share_section_title "[ ShadowTLS JOIN 码 ]" "33;1"
-            render_shadowtls_join_codes "$host" "$conf_file"
-            echo
-        fi
-    } >"$output_file"
+    _subscription_share_render_body "$host" "$conf_file" \
+        "$active_users_name" "$sing_map_name" "$surge_map_name" >"$output_file"
 }
 
 subscription_share_view_cache_refresh_from_payload() {

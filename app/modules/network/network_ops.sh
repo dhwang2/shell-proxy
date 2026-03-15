@@ -55,7 +55,7 @@ manage_network_management() {
         proxy_menu_header "网络管理"
         echo "1. BBR 网络优化"
         echo "2. 服务器防火墙收敛"
-        proxy_menu_back_hint 45
+        proxy_menu_back_hint
         if ! read_prompt choice "选择: "; then
             return 0
         fi
@@ -94,12 +94,12 @@ manage_network_optimization() {
     fi
 
     echo "系统信息"
-    echo "----------------------------------"
+    proxy_menu_divider
     echo "内核版本: ${kernel_ver} (支持 BBR)"
     echo "内存大小: ${mem_mb}MB"
     echo "CPU 核心: ${cpu_cores}"
     echo "虚拟化类型: ${virt_type}"
-    echo "----------------------------------"
+    proxy_menu_divider
 
     local current_cc current_qdisc
     current_cc="$(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null || echo unknown)"
@@ -122,15 +122,14 @@ manage_network_optimization() {
         echo "最大文件句柄: ${file_max}"
     fi
 
-    echo "----------------------------------"
+    proxy_menu_divider
 
     local choice confirm
     if is_bbr_enabled; then
         green "BBR 已启用"
         echo "1. 重新优化 (更新参数)"
         echo "2. 卸载 BBR 优化"
-        echo "----------------------------------"
-        echo "回车返回"
+        proxy_menu_rule "═"
         echo
         if ! read_prompt choice "选择: "; then
             return 0
@@ -271,7 +270,7 @@ EOF
     fi
 
     green "配置已生效"
-    echo "----------------------------------"
+    proxy_menu_divider
     local new_cc new_qdisc
     new_cc="$(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null || echo unknown)"
     new_qdisc="$(sysctl -n net.core.default_qdisc 2>/dev/null || echo unknown)"
@@ -283,7 +282,7 @@ EOF
     echo "写缓冲区: $((wmem_max / 1024 / 1024))MB"
     echo "最大连接队列: ${somaxconn}"
     echo "最大文件句柄: ${file_max}"
-    echo "----------------------------------"
+    proxy_menu_divider
 
     if is_bbr_enabled; then
         green "BBR 优化已成功启用"

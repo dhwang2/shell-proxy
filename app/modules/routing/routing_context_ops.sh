@@ -284,10 +284,10 @@ routing_show_status_uncached() {
     echo
     if routing_context_is_user; then
         echo "当前用户: ${ROUTING_USER_CONTEXT_NAME}"
-        echo "----------------------------------"
+        proxy_menu_divider
     fi
     echo "$(routing_colorize "36;1" "出口状态")"
-    echo "----------------------------------"
+    proxy_menu_divider
     echo "直连: ${direct_label}"
     if routing_status_global_fast_path_ready; then
         echo "代理: $(routing_colorize "31;1" "○ 无节点")"
@@ -296,19 +296,19 @@ routing_show_status_uncached() {
     else
         echo "代理: $(routing_colorize "31;1" "○ 无节点")"
     fi
-    echo "----------------------------------"
+    proxy_menu_divider
     if routing_context_is_user; then
         echo "$(routing_colorize "36;1" "当前用户分流规则")"
     else
         echo "$(routing_colorize "36;1" "分流规则")"
     fi
-    echo "----------------------------------"
+    proxy_menu_divider
     if routing_context_is_user; then
         routing_render_rules_brief "$state_json"
     else
         routing_render_rules_brief_all_users "$conf_file"
     fi
-    echo "----------------------------------"
+    proxy_menu_divider
 }
 
 routing_status_cache_rebuild() {

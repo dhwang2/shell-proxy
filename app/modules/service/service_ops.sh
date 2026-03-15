@@ -184,9 +184,7 @@ proxy_cache_purge_all() {
 
 uninstall_service() {
     ui_clear
-    echo "=================================="
-    echo "   卸载服务"
-    echo "=================================="
+    proxy_menu_header "卸载服务"
     yellow "⚠️ 即将删除以下所有组件："
     
     echo -e "\n[1] 核心程序:"
@@ -206,8 +204,8 @@ uninstall_service() {
     echo -e "\n[3] 配置文件与数据:"
     echo "  - $WORK_DIR (包含 conf, logs, subscription, caddy 证书/acme 数据)"
     echo "  - /usr/bin/proxy (快捷指令)"
-    echo "----------------------------------"
-    
+    proxy_menu_divider
+
     read -p "确认彻底卸载? [y/N]: " confirm
     [[ "${confirm,,}" != "y" ]] && return
 
@@ -352,10 +350,9 @@ print_protocol_services_overview() {
         shadow_front_port_by_backend_target["$shadow_key"]="$st_port"
     done <<< "$shadow_lines"
 
-    echo -e "${C_TITLE}协议管理${C_RESET}"
-    echo "─────────────────────────────────────────────"
+    proxy_menu_header "协议管理"
     echo -e "  ${C_SECTION}已安装协议概览${C_RESET}"
-    echo "─────────────────────────────────────────────"
+    proxy_menu_divider
     local memberships=""
     memberships="$(proxy_user_collect_membership_lines "active" "$conf_file" 2>/dev/null || true)"
 
@@ -549,7 +546,7 @@ manage_protocol_services() {
         echo "  2) 停止所有服务"
         echo "  3) 启动所有服务"
         echo "  4) 查看服务状态"
-        proxy_menu_back_hint 45
+        proxy_menu_back_hint
         if ! read_prompt choice "选择: "; then
             return
         fi

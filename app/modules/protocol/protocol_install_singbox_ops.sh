@@ -81,14 +81,6 @@ modify_singbox_inbounds_logic() {
         pause; return
     fi
 
-    local selected_proto_label="protocol"
-    case "$type_code" in
-        1) selected_proto_label="trojan" ;;
-        2) selected_proto_label="vless" ;;
-        3) selected_proto_label="tuic" ;;
-        4) selected_proto_label="ss" ;;
-        5) selected_proto_label="anytls" ;;
-    esac
     local selected_proto=""
     case "$type_code" in
         1) selected_proto="trojan" ;;
@@ -97,6 +89,7 @@ modify_singbox_inbounds_logic() {
         4) selected_proto="ss" ;;
         5) selected_proto="anytls" ;;
     esac
+    local selected_proto_label="${selected_proto:-protocol}"
 
     local selected_user_name
     selected_user_name="$(proxy_user_select_name_for_protocol_action "选择用户名" "any" "$conf_file")"
@@ -739,7 +732,7 @@ protocol_install_apply_snell_change() {
 protocol_install_session_queue_membership() {
     local target_name="${1:-}" key="${2:-}" template_id="${3:-}" route_sync_required="${4:-0}" conf_file="${5:-}"
     local membership_file route_sync_file
-    [[ -n "${target_name//[[:space:]]/}" ]] || return 1
+    proxy_is_blank_string "$target_name" && return 1
     target_name="$(normalize_proxy_user_name "$target_name")"
     [[ -n "$target_name" && -n "$key" ]] || return 1
     PROTOCOL_INSTALL_PENDING_USER_MEMBERSHIP_TEXT+="${target_name}"$'\t'"${key}"$'\t'"${template_id}"$'\n'
@@ -805,26 +798,26 @@ protocol_install_session_apply_pending_metadata() {
     : >"$route_sync_file"
 }
 
+_protocol_install_session_flush_inner() {
+    protocol_install_session_apply_pending_metadata
+    if (( ${PROTOCOL_INSTALL_PENDING_SNELL_RESTART:-0} == 1 )); then
+        protocol_install_restart_snell_now
+    fi
+    if (( ${PROTOCOL_INSTALL_PENDING_SINGBOX_RESTART:-0} == 1 )); then
+        protocol_install_restart_singbox_now
+    fi
+}
+
 protocol_install_session_flush_now() {
     if ! protocol_install_session_has_pending_changes; then
         return 1
     fi
 
-    protocol_install_session_flush_inner() {
-        protocol_install_session_apply_pending_metadata
-        if (( ${PROTOCOL_INSTALL_PENDING_SNELL_RESTART:-0} == 1 )); then
-            protocol_install_restart_snell_now
-        fi
-        if (( ${PROTOCOL_INSTALL_PENDING_SINGBOX_RESTART:-0} == 1 )); then
-            protocol_install_restart_singbox_now
-        fi
-    }
-
     if declare -F proxy_run_with_spinner_fg >/dev/null 2>&1; then
-        proxy_run_with_spinner_fg "正在应用新配置文件..." protocol_install_session_flush_inner
+        proxy_run_with_spinner_fg "正在应用新配置文件..." _protocol_install_session_flush_inner
     else
         yellow "正在应用新配置文件..."
-        protocol_install_session_flush_inner
+        _protocol_install_session_flush_inner
     fi
 
     PROTOCOL_INSTALL_PENDING_SINGBOX_RESTART=0
@@ -1132,7 +1125,7 @@ add_protocol() {
     protocol_install_session_begin
     while :; do
         ui_clear
-        proxy_menu_header "添加协议" "退出时统一生效"
+        proxy_menu_header "添加协议(退出统一生效)"
 
         range="$(resolve_inbound_random_port_range)"
         IFS='|' read -r random_min_port random_max_port <<< "$range"
@@ -1147,14 +1140,15 @@ add_protocol() {
         compact_port_summary="$(render_compact_port_summary_with_usage \
             "$summary_ports" "$occupied_ports" "$random_min_port" "$random_max_port" "$C_META" "$C_OCCUPIED")"
 
-        echo -e "ports: (${compact_port_summary})"
+        echo -e "(${compact_port_summary})"
         echo "1. trojan"
         echo "2. vless"
         echo "3. tuic"
         echo "4. ss"
         echo "5. anytls"
         echo "6. snell-v5"
-        proxy_menu_divider 34
+        proxy_menu_rule "═"
+        echo
         if ! read_prompt proto_type "选择(回车返回): "; then
             break
         fi
@@ -1186,9 +1180,7 @@ add_protocol() {
 
 modify_snell_config() {
     ui_clear
-    echo "=================================="
-    echo "   配置 snell-v5"
-    echo "=================================="
+    proxy_menu_header "配置 snell-v5"
     local has_conf="no"
     [[ -f "$SNELL_CONF" ]] && has_conf="yes"
 

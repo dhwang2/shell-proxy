@@ -838,3 +838,36 @@ Measured 6-protocol real-menu install for user `u193x1` -- before fix: `proto_5(
 - **Verification**:
   - `bash -n` passed on both modified files.
   - Deployed to `gcp-oregon`, rebuilt bundles; install protocol flow confirmed working with simplified prompts and spinner animation.
+
+##### u-2-112 refactor: code review cleanup and structural deduplication (2026-03-15)
+> **Target**: Address code quality, efficiency, and structural duplication issues identified by three-agent parallel review (/simplify), then resolve the remaining deferred items.
+
+- **Phase 1 — Review findings and immediate fixes**:
+  1. `proxy_run_with_spinner_fg` in `common_ops.sh:266` ran `"$@" >/dev/null 2>&1`, silently discarding all stdout/stderr from the work function — sub-step messages like route-sync status were invisible to the user. Fix: removed the redirect; spinner writes to `/dev/tty` so no collision.
+  2. `protocol_install_session_flush_inner` was defined as a nested function inside `flush_now`, leaking to global scope on every call. Fix: hoisted to module scope as `_protocol_install_session_flush_inner()`.
+  3. `surge_notes` array was vestigial after note removal. Fix: replaced with direct conditional `printf`.
+
+- **Phase 2 — Structural deduplication**:
+  1. `app/modules/subscription/share_ops.sh`: removed 3 verbose surge note lines. Extracted `_subscription_share_render_body()` using bash namerefs — accepts user array name, sing map name, and surge map name as arguments. Both `subscription_share_render_to_file` and `subscription_share_render_payload_to_file` now delegate to this single helper (~50 duplicated lines removed).
+  2. `app/modules/protocol/protocol_install_singbox_ops.sh`: merged two identical `case` blocks for `selected_proto` and `selected_proto_label` into one — `selected_proto_label` is now derived as `"${selected_proto:-protocol}"`.
+  3. `app/modules/core/common_ops.sh`: added `proxy_is_blank_string()` utility (one-liner: `[[ -z "${1//[[:space:]]/}" ]]`). Replaced 4 inline whitespace-guard patterns: `user_meta_ops.sh` (2 sites), `user_ops.sh` (1 site), `protocol_install_singbox_ops.sh` (1 site).
+
+- **Verification**:
+  - `bash -n` passed on all 5 modified files.
+  - Deployed to `gcp-oregon`, rebuilt bundles successfully.
+
+##### u-2-113 ux: unify all sub-menu separators and headers to 68-char standardized API (2026-03-15)
+> **Target**: Eliminate all raw `echo "==="` and `echo "---"` separator patterns across the entire `app/modules/` tree, replacing them with the standardized `proxy_menu_header`, `proxy_menu_divider`, and `proxy_menu_rule` APIs at a consistent 68-char width.
+
+- **Changes**:
+  1. `app/modules/core/common_ops.sh`: updated default widths from 45→68 for `proxy_menu_rule`, `proxy_menu_header`, `proxy_menu_divider`; added `proxy_is_blank_string` utility.
+  2. `app/management.sh`: redesigned main menu layout — 68-char `═` separators, centered title `shell-proxy 一键部署 [服务端]`, protocol display uses `/` separator, menu items right-aligned `(N)` in 8-char field.
+  3. `app/modules/runtime/runtime_status_ops.sh`: matching main menu dashboard changes — 2-space status indent, `/` protocol separator, `+shadow-tls` token format.
+  4. Raw `echo "==="` headers replaced with `proxy_menu_header` in 8 files (14 occurrences): `protocol_install_singbox_ops.sh` (snell sub-menu), `protocol_ops.sh` (uninstall), `routing_menu_support_ops.sh` (direct outbound, chain proxy, test routing), `routing_rule_menu_ops.sh` (add/delete/modify/configure rules), `routing_res_socks_ops.sh` (node picker, chain proxy config), `service_ops.sh` (uninstall service, protocol management), `network_firewall_ops.sh` (firewall convergence), `bootstrap_ops.sh` (script update).
+  5. Raw `echo "---"` dividers replaced across 13 files: section dividers → `proxy_menu_divider` (thin `─`), menu footers before "回车返回" → `proxy_menu_rule "═"` (thick).
+  6. All `proxy_menu_back_hint 45` calls updated to `proxy_menu_back_hint` (uses default 68) in `core_ops.sh`, `user_ops.sh`, `service_ops.sh`, `network_ops.sh`, `log_ops.sh`, `routing_menu_support_ops.sh`.
+  7. `log_ops.sh`: replaced 2 `yellow "=== snell-v5/shadow-tls-v3 配置 ==="` with `proxy_menu_header`.
+
+- **Verification**:
+  - `bash -n` passed on all 15 modified `.sh` files.
+  - Zero raw `echo "==="` or `echo "---"` dividers remain in `app/modules/`.

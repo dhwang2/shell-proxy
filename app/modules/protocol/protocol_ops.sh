@@ -281,9 +281,7 @@ protocol_remove_apply_changes_with_spinner() {
 remove_protocol() {
     while :; do
         ui_clear
-        echo "=================================="
-        echo "   卸载协议"
-        echo "=================================="
+        proxy_menu_header "卸载协议"
 
         local conf_file
         conf_file="$(get_conf_file)"
@@ -303,7 +301,6 @@ remove_protocol() {
         fi
 
         local summary_block=""
-        summary_block+="当前可卸载协议:"$'\n'
         local row summary_parts name active_count disabled_count total_count user_count idx
         local -a protocol_name_rows
         local -a protocol_user_counts=()
@@ -322,10 +319,10 @@ remove_protocol() {
             summary_block+="${idx}. $(proxy_user_protocol_label "$proto")(${user_count}): ${summary_parts[*]:-无}"$'\n'
             ((idx++))
         done
-        summary_block+=$'\n'
-
         local target_proto
         printf '%s' "$summary_block"
+        proxy_menu_rule "═"
+        echo
         if ! read_prompt pick "选择序号(回车取消): "; then
             return
         fi

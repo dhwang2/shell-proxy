@@ -277,7 +277,7 @@ proxy_user_group_list() {
 
 proxy_user_group_add() {
     local name="${1:-}"
-    [[ -n "${name//[[:space:]]/}" ]] || return 1
+    proxy_is_blank_string "$name" && return 1
     name="$(normalize_proxy_user_name "$name")"
     [[ -n "$name" ]] || return 1
 
@@ -382,7 +382,7 @@ proxy_user_meta_set_template() {
 proxy_user_meta_apply_protocol_membership() {
     local target_name="${1:-}" key="${2:-}" template_id="${3:-}"
     local created_at tmp_json
-    [[ -n "${target_name//[[:space:]]/}" ]] || return 1
+    proxy_is_blank_string "$target_name" && return 1
     target_name="$(normalize_proxy_user_name "$target_name")"
     [[ -n "$target_name" && -n "$key" ]] || return 1
 

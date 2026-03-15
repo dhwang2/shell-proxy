@@ -84,7 +84,7 @@ manage_users() {
         echo "2. 添加用户"
         echo "3. 重置用户"
         echo "4. 删除用户"
-        proxy_menu_back_hint 45
+        proxy_menu_back_hint
         if ! read_prompt choice "选择: "; then
             return
         fi
@@ -270,7 +270,7 @@ add_user_group() {
     local input_name target_name yn
     echo
     read -r -p "用户名 (回车取消): " input_name
-    [[ -n "${input_name//[[:space:]]/}" ]] || return 130
+    proxy_is_blank_string "$input_name" && return 130
     target_name="$(printf '%s' "$input_name" | tr '[:upper:]' '[:lower:]' | tr -d '\r' | tr -d '\n' | sed -E 's/[[:space:]]+/-/g; s/[^a-z0-9._-]+/-/g; s/-+/-/g; s/^[-_.]+//; s/[-_.]+$//')"
     [[ -n "$target_name" ]] || { red "用户名无效，请重新输入。"; return; }
     if user_group_name_exists "$target_name"; then

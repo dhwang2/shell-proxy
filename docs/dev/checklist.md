@@ -230,3 +230,21 @@
   - [x] Wrapped `protocol_install_session_flush_now` with `proxy_run_with_spinner_fg` for spinner animation during config apply.
   - [x] Simplified install protocol user selection prompt from "选择用户名 (protocol)" to "选择用户名" in both singbox and snell paths.
   - [x] Re-validated with `bash -n`; deployed and rebuilt bundles on `gcp-oregon`.
+
+- [x] **u-2-112 refactor: code review cleanup and structural deduplication (2026-03-15)**
+  - [x] Fixed `proxy_run_with_spinner_fg` swallowing stdout/stderr — removed `>/dev/null 2>&1` redirect so sub-step messages are visible alongside spinner.
+  - [x] Hoisted nested `protocol_install_session_flush_inner` to module scope as `_protocol_install_session_flush_inner` to prevent global namespace leak.
+  - [x] Removed 3 verbose surge note lines from subscription share view in `share_ops.sh`.
+  - [x] Extracted `_subscription_share_render_body` helper using namerefs to deduplicate ~90% identical rendering logic between `render_to_file` and `render_payload_to_file`.
+  - [x] Merged duplicate `case` blocks for `selected_proto` / `selected_proto_label` into single `case` with derived label.
+  - [x] Added `proxy_is_blank_string` utility to `common_ops.sh`; replaced 4 inline whitespace-guard patterns across 3 files.
+  - [x] Re-validated with `bash -n` on all 5 modified files; deployed and rebuilt bundles on `gcp-oregon`.
+
+- [x] **u-2-113 ux: unify all sub-menu separators and headers to 68-char standardized API (2026-03-15)**
+  - [x] Replaced all 14 raw `echo "==="` sub-menu headers across 8 files with `proxy_menu_header` (68-char default width).
+  - [x] Replaced all remaining raw `echo "---"` dividers across `app/modules/` with `proxy_menu_divider` (thin `─`) or `proxy_menu_rule "═"` (thick, for menu footers).
+  - [x] Fixed all `proxy_menu_back_hint 45` calls to use default width 68.
+  - [x] Replaced 2 `yellow "=== ..."` config detail headers in `log_ops.sh` with `proxy_menu_header`.
+  - [x] Updated default widths in `common_ops.sh`: `proxy_menu_rule`, `proxy_menu_header`, `proxy_menu_divider` all 45→68.
+  - [x] Redesigned main menu layout: wider 68-char `═` separators, centered title, protocol display `/` separator, `(N)` right-aligned menu items.
+  - [x] Re-validated with `bash -n` on all 15 modified files.

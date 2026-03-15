@@ -268,9 +268,9 @@ dashboard_conf_snapshot() {
             if . == "shadowsocks" then "ss" else . end;
         def join_csv($arr):
             ($arr | map(select(type == "string" and length > 0)) | unique | join(","));
-        def join_plus($arr):
-            ($arr | map(select(type == "string" and length > 0)) | unique | join("+"));
-        "types=" + join_plus([.inbounds[]?.type // empty | norm_type]),
+        def join_slash($arr):
+            ($arr | map(select(type == "string" and length > 0)) | unique | join("/"));
+        "types=" + join_slash([.inbounds[]?.type // empty | norm_type]),
         "ports=" + join_csv([.inbounds[]?.listen_port // empty | tostring]),
         "rules=" + ((.route.rules | length // 0) | tostring)
     ' "$conf_file" 2>/dev/null || printf 'types=\nports=\nrules=0\n'
@@ -306,7 +306,7 @@ get_configured_protocols() {
     has_proto_token() {
         local token="$1"
         [[ -n "$token" ]] || return 1
-        [[ "+${protos}+" == *"+${token}+"* ]]
+        [[ "/${protos}/" == *"/${token}/"* ]]
     }
 
     append_proto_token() {
@@ -314,7 +314,7 @@ get_configured_protocols() {
         [[ -n "$token" ]] || return 0
         has_proto_token "$token" && return 0
         if [[ -n "$protos" ]]; then
-            protos+="+${token}"
+            protos+="/${token}"
         else
             protos="${token}"
         fi
@@ -326,11 +326,11 @@ get_configured_protocols() {
         [[ -n "$old_token" && -n "$new_token" ]] || return 0
         local out="" p
         local -a __parts
-        IFS='+' read -r -a __parts <<< "$protos"
+        IFS='/' read -r -a __parts <<< "$protos"
         for p in "${__parts[@]}"; do
             [[ "$p" == "$old_token" ]] && p="$new_token"
             if [[ -n "$out" ]]; then
-                out+="+${p}"
+                out+="/${p}"
             else
                 out="${p}"
             fi
@@ -361,17 +361,17 @@ get_configured_protocols() {
         done <<< "$st_lines"
         if (( st_snell > 0 )); then
             if has_proto_token "snell-v5"; then
-                replace_proto_token "snell-v5" "snell-v5-shadow-tls-v3"
+                replace_proto_token "snell-v5" "snell-v5+shadow-tls"
             else
-                append_proto_token "snell-v5-shadow-tls-v3"
+                append_proto_token "snell-v5+shadow-tls"
             fi
         fi
 
         if (( st_ss > 0 )); then
             if has_proto_token "ss"; then
-                replace_proto_token "ss" "ss-shadow-tls-v3"
+                replace_proto_token "ss" "ss+shadow-tls"
             else
-                append_proto_token "ss-shadow-tls-v3"
+                append_proto_token "ss+shadow-tls"
             fi
         fi
 
@@ -714,15 +714,15 @@ print_dashboard() {
         C_SEP=$'\033[1;31m'
     fi
 
-    echo -e "${C_SEP}═════════════════════════════════════════════${C_RESET}"
-    echo -e "${C_TITLE}      多协议代理 一键部署  [服务端]${C_RESET}"
-    echo -e "${C_TITLE}  作者: dhwang2  命令: proxy  版本: ${version}${C_RESET}"
-    echo -e "${C_SEP}═════════════════════════════════════════════${C_RESET}"
-    echo -e "  ${C_LABEL}服务端管理${C_RESET}"
+    local sep_line="${C_SEP}════════════════════════════════════════════════════════════════════${C_RESET}"
+    echo -e "$sep_line"
+    echo -e "${C_TITLE}                  shell-proxy 一键部署 [服务端]${C_RESET}"
+    echo -e "${C_TITLE}         作者: dhwang2    命令: proxy     版本: ${version}${C_RESET}"
+    echo -e "$sep_line"
     echo -e "  ${C_LABEL}系统:${C_RESET} ${C_VAL_SYS}${os_id}${C_RESET} ${C_LABEL}| 架构:${C_RESET} ${C_VAL_SYS}${arch}${C_RESET} ${C_LABEL}| 网络栈:${C_RESET} ${C_VAL_SYS}${ip_stack}${C_RESET}"
     echo -e "  ${C_LABEL}状态:${C_RESET} ${status}"
     echo -e "  ${C_LABEL}协议:${C_RESET} ${C_VAL_PROTO}${protos}${C_RESET}"
     echo -e "  ${C_LABEL}端口:${C_RESET} ${C_VAL_PORT}${ports}${C_RESET}"
     echo -e "  ${C_LABEL}分流:${C_RESET} ${C_VAL_RULE}${rules}条规则${C_RESET}"
-    echo -e "${C_SEP}═════════════════════════════════════════════${C_RESET}"
+    echo -e "$sep_line"
 }

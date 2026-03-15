@@ -342,8 +342,7 @@ routing_select_outbound() {
                 echo "${idx}. ${label}"
                 ((idx++))
             done
-            echo "----------------------------------"
-            echo "回车返回"
+            proxy_menu_rule "═"
             echo
         } >"$render_file"
         cat "$render_file" >&2

@@ -148,9 +148,7 @@ routing_add_rule_interactive() {
     local render_file=""
     render_file="$(routing_render_to_temp_file)"
     {
-        echo "=================================="
-        echo "   添加分流规则"
-        echo "=================================="
+        proxy_menu_header "添加分流规则"
         echo "1. OpenAI/ChatGPT"
         echo "2. Anthropic/Claude"
         echo "3. Google"
@@ -179,8 +177,7 @@ routing_add_rule_interactive() {
         echo "c. 自定义域名/IP/CIDR"
         echo "f. 所有流量"
         echo "可多选: 1,2,3 或 b,s,r"
-        echo "----------------------------------"
-        echo "回车返回"
+        proxy_menu_rule "═"
         echo
     } >"$render_file"
     routing_print_rendered_file "$render_file"
@@ -312,18 +309,14 @@ routing_delete_rule_interactive() {
     local render_file=""
     render_file="$(routing_render_to_temp_file)"
     {
-        echo "=================================="
-        echo "   删除分流规则"
-        echo "=================================="
+        proxy_menu_header "删除分流规则"
         local idx=1 entry
         while IFS= read -r entry; do
             [[ -z "$entry" ]] && continue
             routing_rule_display_line "$idx" "$entry"
             idx=$((idx + 1))
         done < <(echo "$state_json" | jq -c '.[]?' 2>/dev/null)
-        echo "----------------------------------"
-        echo "可多选: 1,2,3 或 a(全部)"
-        echo "回车返回"
+        proxy_menu_rule "═"
         echo
     } >"$render_file"
     routing_print_rendered_file "$render_file"
@@ -416,18 +409,14 @@ routing_modify_rule_interactive() {
     local render_file=""
     render_file="$(routing_render_to_temp_file)"
     {
-        echo "=================================="
-        echo "   修改分流规则"
-        echo "=================================="
+        proxy_menu_header "修改分流规则"
         local idx=1 entry
         while IFS= read -r entry; do
             [[ -z "$entry" ]] && continue
             routing_rule_display_line "$idx" "$entry"
             idx=$((idx + 1))
         done < <(jq -c '.[]?' <<<"$state_json" 2>/dev/null)
-        echo "----------------------------------"
-        echo "可多选: 1,2,3 或 a(全部)"
-        echo "回车返回"
+        proxy_menu_rule "═"
         echo
     } >"$render_file"
     routing_print_rendered_file "$render_file"
@@ -519,9 +508,7 @@ configure_routing_rules_menu() {
         local render_file=""
         render_file="$(routing_render_to_temp_file)"
         {
-            echo "=================================="
-            echo "   配置分流规则"
-            echo "=================================="
+            proxy_menu_header "配置分流规则"
             if (( ROUTING_RULE_SESSION_DIRTY == 1 )); then
                 state_json="$(routing_rule_session_state_json)"
                 routing_show_status "$conf_file" "$state_json"
@@ -533,8 +520,7 @@ configure_routing_rules_menu() {
             echo "1. 添加分流规则"
             echo "2. 删除分流规则"
             echo "3. 修改分流规则"
-            echo "----------------------------------"
-            echo "回车返回"
+            proxy_menu_rule "═"
             echo
         } >"$render_file"
         routing_print_rendered_file "$render_file"

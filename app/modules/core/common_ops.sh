@@ -57,7 +57,7 @@ fi
 
 if ! declare -F proxy_menu_rule >/dev/null 2>&1; then
 proxy_menu_rule() {
-    local char="${1:-─}" width="${2:-45}" line=""
+    local char="${1:-─}" width="${2:-68}" line=""
     printf -v line '%*s' "$width" ''
     line="${line// /$char}"
     if proxy_ui_color_enabled; then
@@ -70,7 +70,7 @@ fi
 
 if ! declare -F proxy_menu_header >/dev/null 2>&1; then
 proxy_menu_header() {
-    local title="${1:-}" subtitle="${2:-}" width="${3:-45}"
+    local title="${1:-}" subtitle="${2:-}" width="${3:-68}"
     proxy_menu_rule "═" "$width"
     if proxy_ui_color_enabled; then
         printf '\033[36;1m  %s\033[0m\n' "$title"
@@ -85,7 +85,7 @@ fi
 
 if ! declare -F proxy_menu_divider >/dev/null 2>&1; then
 proxy_menu_divider() {
-    proxy_menu_rule "─" "${1:-45}"
+    proxy_menu_rule "─" "${1:-68}"
 }
 fi
 
@@ -263,13 +263,17 @@ proxy_run_with_spinner_fg() {
     ) &
     spinner_pid=$!
 
-    "$@" >/dev/null 2>&1 || rc=$?
+    "$@" || rc=$?
 
     kill "$spinner_pid" 2>/dev/null
     wait "$spinner_pid" 2>/dev/null
     printf '\r\033[K' > /dev/tty
     return "$rc"
 }
+fi
+
+if ! declare -F proxy_is_blank_string >/dev/null 2>&1; then
+proxy_is_blank_string() { [[ -z "${1//[[:space:]]/}" ]]; }
 fi
 
 if ! declare -F gen_rand_alnum >/dev/null 2>&1; then

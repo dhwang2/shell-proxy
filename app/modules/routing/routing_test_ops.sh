@@ -103,10 +103,10 @@ routing_render_test_effect_uncached() {
     echo
     if routing_context_is_user; then
         echo "用户: ${ROUTING_USER_CONTEXT_NAME}"
-        echo "----------------------------------"
+        proxy_menu_divider
     fi
     yellow "测试分流效果（结果仅作快速自检）"
-    echo "----------------------------------"
+    proxy_menu_divider
     now_label="$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || true)"
     [[ -n "$now_label" ]] && echo "探测时间: ${now_label}"
 
@@ -153,7 +153,7 @@ routing_render_test_effect_uncached() {
         done
     fi
 
-    echo "----------------------------------"
+    proxy_menu_divider
     count="$(echo "$state_json" | jq -r 'length' 2>/dev/null || echo 0)"
     if [[ "$count" -eq 0 ]]; then
         echo "分流规则: 未配置"
@@ -270,13 +270,13 @@ routing_render_test_effect_pending_view() {
     echo
     if routing_context_is_user; then
         echo "用户: ${ROUTING_USER_CONTEXT_NAME}"
-        echo "----------------------------------"
+        proxy_menu_divider
     fi
     yellow "测试分流效果（结果仅作快速自检）"
-    echo "----------------------------------"
+    proxy_menu_divider
     echo "状态: 暂无可用探测缓存，已启动后台刷新"
     echo "提示: 稍后重新进入本页面查看最新出口 IP"
-    echo "----------------------------------"
+    proxy_menu_divider
     count="$(echo "$state_json" | jq -r 'length' 2>/dev/null || echo 0)"
     if [[ "$count" -eq 0 ]]; then
         echo "分流规则: 未配置"

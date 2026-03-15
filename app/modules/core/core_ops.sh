@@ -19,7 +19,7 @@ manage_core() {
         echo "1. 查看版本"
         echo "2. 检查更新"
         echo "3. 执行更新"
-        proxy_menu_back_hint 45
+        proxy_menu_back_hint
         if ! read_prompt choice "选择: "; then
             return
         fi

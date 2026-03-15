@@ -110,7 +110,7 @@ show_status_and_logs() {
             note="${display_name} 文件不存在"
         fi
         echo
-        echo "----------------------------------"
+        proxy_menu_divider
         echo -e "${display_name} (${C_PATH}${log_file}${C_RESET})"
         [[ -n "$note" ]] && yellow "$note"
     }
@@ -135,7 +135,7 @@ show_status_and_logs() {
         fi
 
         echo
-        echo "----------------------------------"
+        proxy_menu_divider
         echo -e "Watchdog 日志 (${C_PATH}${PROXY_WATCHDOG_LOG}${C_RESET})"
         [[ -n "$source_note" ]] && yellow "$source_note"
         [[ -n "$note" ]] && yellow "$note"
@@ -215,7 +215,7 @@ show_status_and_logs() {
 
             echo
             echo "服务日志"
-            echo "----------------------------------"
+            proxy_menu_divider
             local idx=1
             local entry label
             for entry in "${choices[@]}"; do
@@ -223,8 +223,7 @@ show_status_and_logs() {
                 echo "${idx}. ${label}"
                 idx=$((idx + 1))
             done
-            echo "----------------------------------"
-            echo "回车返回"
+            proxy_menu_rule "═"
             echo
             if ! read_prompt svc_choice "选择: "; then
                 return 0
@@ -244,7 +243,7 @@ show_status_and_logs() {
             selected_log_path="$(service_log_path "$selected_unit")"
             show_recent_logs "$selected_unit" 50
             echo
-            echo "----------------------------------"
+            proxy_menu_divider
             if [[ -n "$selected_log_path" ]]; then
                 echo -e "${selected_label} (最近 50 行) (${C_PATH}${selected_log_path}${C_RESET})"
             else
@@ -267,7 +266,7 @@ show_status_and_logs() {
         echo "1. 查看脚本日志 (最近 50 行/静态)"
         echo "2. 查看 Watchdog 日志 (最近 50 行)"
         echo "3. 查看服务日志 (按协议选择)"
-        proxy_menu_back_hint 45
+        proxy_menu_back_hint
         if ! read_prompt choice "选择: "; then
             return
         fi
@@ -312,7 +311,7 @@ show_config_details() {
         echo "1. sing-box"
         echo "2. snell-v5"
         echo "3. shadow-tls"
-        proxy_menu_back_hint 45
+        proxy_menu_back_hint
         if ! read_prompt c_choice "选择: "; then
             return
         fi
@@ -356,7 +355,7 @@ show_config_details() {
             2)
                 ui_clear
                 if is_snell_configured; then
-                    yellow "=== snell-v5 配置 ($SNELL_CONF) ==="
+                    proxy_menu_header "snell-v5 配置 ($SNELL_CONF)"
                     cat "$SNELL_CONF"
                 else
                     yellow "无 snell-v5 配置"
@@ -373,7 +372,7 @@ show_config_details() {
                     continue
                 fi
 
-                yellow "=== shadow-tls-v3 配置 ==="
+                proxy_menu_header "shadow-tls-v3 配置"
                 local st_line st_service st_port st_target st_backend st_sni st_pass st_state
                 local printed_shadowtls=0
                 while IFS= read -r st_line; do

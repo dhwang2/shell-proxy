@@ -404,13 +404,10 @@ update_self() {
 
     if [[ -z "$update_mode" ]]; then
         ui_clear
-        echo "=================================="
-        echo "   脚本更新"
-        echo "=================================="
+        proxy_menu_header "脚本更新"
         echo "1. release"
         echo "2. repo"
-        echo "----------------------------------"
-        echo "回车返回"
+        proxy_menu_rule "═"
         echo
         local choice=""
         if ! read_prompt choice "选择: "; then

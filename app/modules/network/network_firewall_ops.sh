@@ -291,23 +291,20 @@ manage_firewall_convergence() {
 
     while :; do
         ui_clear
-        echo "=================================="
-        echo "   服务器防火墙收敛"
-        echo "=================================="
+        proxy_menu_header "服务器防火墙收敛"
         echo "收敛策略:"
         echo "1. 自动检测当前入站协议端口并放行"
         echo "2. 协议端口变更后可重复执行以更新"
         echo "3. 自动保留 SSH / Caddy 等管理端口（IPv4/IPv6 同步）"
         echo "4. 除必要端口外，其余 IPv4/IPv6 入站默认关闭"
-        echo "----------------------------------"
+        proxy_menu_divider
         echo "防火墙后端: ${backend_display}"
         echo "目标开放端口:"
         network_firewall_render_desired_ports "$conf_file"
-        echo "----------------------------------"
+        proxy_menu_divider
         echo "1. 应用/更新防火墙收敛"
         echo "2. 查看当前防火墙规则"
-        echo "----------------------------------"
-        echo "回车返回"
+        proxy_menu_rule "═"
         echo
         if ! read_prompt choice "选择: "; then
             return 0

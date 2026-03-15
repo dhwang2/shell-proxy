@@ -89,9 +89,7 @@ res_socks_pick_node_id_interactive() {
     fi
 
     ui_clear >&2
-    echo "==================================" >&2
-    echo "   ${title}" >&2
-    echo "==================================" >&2
+    proxy_menu_header "$title" >&2
     local idx=1
     for label in "${labels[@]}"; do
         echo "${idx}. ${label}" >&2
@@ -168,9 +166,7 @@ configure_res_socks_interactive() {
     [[ -z "$conf_file" ]] && conf_file="$(get_conf_file)"
 
     ui_clear
-    echo "=================================="
-    echo "   配置链式代理节点"
-    echo "=================================="
+    proxy_menu_header "配置链式代理节点"
 
     if [[ -z "$conf_file" || ! -f "$conf_file" ]]; then
         red "未发现 sing-box 配置文件，请先重建配置。"
