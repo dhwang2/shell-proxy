@@ -903,3 +903,18 @@ Measured 6-protocol real-menu install for user `u193x1` -- before fix: `proto_5(
 - **Verification**:
   - `bash -n` passed on all 16 modified files.
   - Deployed to `gcp-oregon`, rebuilt bundles.
+
+##### u-2-116 refactor: remove "all traffic" and "custom" menu options, clean dead code (2026-03-15)
+> **Target**: Remove unused routing preset menu options and clean up all resulting dead code.
+
+- **Changes**:
+  1. Removed `c. 自定义域名/IP/CIDR` and `f. 所有流量` menu items and case mappings from `routing_rule_menu_ops.sh`.
+  2. Removed `routing_print_route_rule_all()` function from `routing_preset_ops.sh`.
+  3. Removed 3 dead `map(select(.type == "all"))` jq sort patterns across `routing_rule_menu_ops.sh` and `routing_ops.sh`.
+  4. Removed dead custom input prompt block and custom state-building branch from `routing_add_rule_interactive()`.
+  5. Simplified `""|all) continue` to `"") continue` in `routing_required_ruleset_tags_from_state()`.
+  6. Removed `all)` entries from `routing_preset_label()` and `routing_preset_label_colored()`.
+  7. Removed dead function `routing_user_requires_route_sync_on_protocol_add()` from `routing_context_ops.sh`.
+
+- **Verification**:
+  - `bash -n` passed on all 4 modified files.

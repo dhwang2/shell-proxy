@@ -72,7 +72,6 @@ routing_user_load_state_json() {
         rules_json="$(proxy_user_template_get_rules_json "$template_id")"
         merged="$(jq -cn --argjson a "$merged" --argjson b "${rules_json:-[]}" '
             (($a | if type == "array" then . else [] end) + ($b | if type == "array" then . else [] end))
-            | (map(select(.type != "all")) + map(select(.type == "all")))
         ' 2>/dev/null || echo "[]")"
     done
     ROUTING_USER_STATE_JSON_CACHE["$target_name"]="${merged:-[]}"

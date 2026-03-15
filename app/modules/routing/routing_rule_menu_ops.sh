@@ -174,8 +174,6 @@ routing_add_rule_interactive() {
         echo "  s. Spotify"
         echo "  t. TikTok"
         echo "  r. 广告屏蔽"
-        echo "  c. 自定义域名/IP/CIDR"
-        echo "  f. 所有流量"
         echo "可多选: 1,2,3 或 b,s,r"
         proxy_menu_rule "═"
     } >"$render_file"
@@ -226,8 +224,6 @@ routing_add_rule_interactive() {
             s) mapped_type="spotify" ;;
             t) mapped_type="tiktok" ;;
             r) mapped_type="ads" ;;
-            c) mapped_type="custom" ;;
-            f) mapped_type="all" ;;
             *) red "无效输入"; return 1 ;;
         esac
         if [[ "$picked_csv" != *",$mapped_type,"* ]]; then
@@ -240,40 +236,17 @@ routing_add_rule_interactive() {
     local outbound
     outbound="$(routing_select_outbound "$conf_file")" || return 0
 
-    local domains=""
-    if [[ "$picked_csv" == *",custom,"* ]]; then
-        echo
-        echo "示例: openai.com,claude.ai,1.2.3.4/32,keyword:telegram"
-        read -p "输入匹配规则(逗号分隔): " domains
-        domains="$(echo "$domains" | tr -d '[:space:]')"
-        [[ -z "$domains" ]] && { yellow "输入为空，已取消"; return 1; }
-        local preview_rule
-        preview_rule="$(routing_build_custom_rule "$outbound" "$domains")"
-        [[ -z "$preview_rule" ]] && { red "自定义规则无有效匹配项，已取消"; return 1; }
-    fi
-
     local old_state new_state rule_id rule_type
     old_state="$(routing_rule_session_state_json)"
     new_state="$old_state"
     for rule_type in "${picked_types[@]}"; do
         rule_id="r$(date +%s)${RANDOM}"
-        if [[ "$rule_type" == "custom" ]]; then
-            new_state="$(echo "$new_state" | jq -c \
-                --arg id "$rule_id" \
-                --arg outbound "$outbound" \
-                --arg domains "$domains" '
-                (. + [{id:$id, type:"custom", outbound:$outbound, domains:$domains}])
-                | (map(select(.type != "all")) + map(select(.type == "all")))
-            ' 2>/dev/null)"
-        else
-            new_state="$(echo "$new_state" | jq -c \
-                --arg id "$rule_id" \
-                --arg type "$rule_type" \
-                --arg outbound "$outbound" '
-                ([.[] | select(.type != $type)] + [{id:$id, type:$type, outbound:$outbound, domains:""}])
-                | (map(select(.type != "all")) + map(select(.type == "all")))
-            ' 2>/dev/null)"
-        fi
+        new_state="$(echo "$new_state" | jq -c \
+            --arg id "$rule_id" \
+            --arg type "$rule_type" \
+            --arg outbound "$outbound" '
+            ([.[] | select(.type != $type)] + [{id:$id, type:$type, outbound:$outbound, domains:""}])
+        ' 2>/dev/null)"
         [[ -z "$new_state" ]] && break
     done
 

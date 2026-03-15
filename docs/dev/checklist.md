@@ -266,3 +266,10 @@
   - [x] Added 2-space indent to all remaining sub-menus: 12+ static menus across 6 files, 8 dynamic `printf`/`echo` lines across 6 files.
   - [x] Changed service menu `)` to `.` numbering style.
   - [x] Re-validated with `bash -n` on all 16 modified files; deployed and rebuilt on `gcp-oregon`.
+
+- [x] **u-2-116 refactor: remove "all traffic" and "custom" menu options, clean dead code (2026-03-15)**
+  - [x] Removed `c. 自定义域名/IP/CIDR` and `f. 所有流量` from routing rule preset menu and case mappings.
+  - [x] Removed `routing_print_route_rule_all()`, dead "all" jq sort patterns (3 locations), dead custom input/state blocks.
+  - [x] Removed dead function `routing_user_requires_route_sync_on_protocol_add()`.
+  - [x] Kept `custom` type handling in state processing and label rendering for backward compatibility.
+  - [x] Re-validated with `bash -n` on all 4 modified files.

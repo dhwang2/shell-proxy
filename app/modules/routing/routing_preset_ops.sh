@@ -142,11 +142,6 @@ routing_print_route_rule_with_domain_suffix() {
         "$(routing_json_escape_string "$outbound")"
 }
 
-routing_print_route_rule_all() {
-    local outbound="${1:-}"
-    printf '{"action":"route","outbound":"%s"}\n' "$(routing_json_escape_string "$outbound")"
-}
-
 routing_state_entry_rows() {
     local state_json="${1:-[]}"
     jq -r --arg sep "$ROUTING_PRESET_FIELD_SEP" '
@@ -216,7 +211,6 @@ routing_preset_label() {
         ads) echo "广告屏蔽" ;;
         ai-intl) echo "AI服务(国际)" ;;
         custom) echo "自定义" ;;
-        all) echo "所有流量" ;;
         *) echo "$t" ;;
     esac
 }
@@ -232,7 +226,6 @@ routing_preset_label_colored() {
         xai) routing_colorize "35;1" "$label" ;;
         ads) routing_colorize "31;1" "$label" ;;
         custom) routing_colorize "37;1" "$label" ;;
-        all) routing_colorize "31;1" "$label" ;;
         *) routing_colorize "37;1" "$label" ;;
     esac
 }
@@ -280,7 +273,7 @@ routing_required_ruleset_tags_from_state() {
         [[ -n "$row" ]] || continue
         IFS="$ROUTING_PRESET_FIELD_SEP" read -r t out domains <<<"$row"
         case "$t" in
-            ""|all)
+            "")
                 continue
                 ;;
             custom)
@@ -466,11 +459,6 @@ routing_build_custom_rule() {
 routing_build_rule_objects_from_fields() {
     local t="$1" out="$2" domains="$3" conf_file="${4:-}" ruleset_tags_name="${5:-}"
     [[ -n "$t" && -n "$out" ]] || return 0
-
-    if [[ "$t" == "all" ]]; then
-        routing_print_route_rule_all "$out"
-        return 0
-    fi
 
     if [[ "$t" == "custom" ]]; then
         local custom_rule

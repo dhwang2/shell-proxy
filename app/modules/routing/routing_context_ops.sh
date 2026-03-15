@@ -539,17 +539,6 @@ routing_user_has_bindable_keys_for_name() {
     (( ${#rows[@]} > 0 ))
 }
 
-routing_user_requires_route_sync_on_protocol_add() {
-    local target_name="${1:-}" conf_file="${2:-}"
-    # Route rules are compiled by auth_user, not by protocol key.
-    # Adding another bindable sing-box protocol for the same user only needs a
-    # full sync when this is the user's first bindable protocol.
-    if routing_user_has_bindable_keys_for_name "$target_name" "$conf_file"; then
-        return 1
-    fi
-    return 0
-}
-
 routing_user_collect_bindable_keys_array() {
     local __array_name="${1:-}" target_name="${2:-}" conf_file="${3:-}"
     local -n rows_ref="$__array_name"
