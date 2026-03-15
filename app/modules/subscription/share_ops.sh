@@ -216,14 +216,8 @@ subscription_share_render_to_file() {
         echo
         print_share_section_title "[ Surge 链接 ]" "35;1"
         local -a surge_notes=()
-        if surge_link_verbose_params_enabled; then
-            surge_notes+=("Surge 链接显式输出 udp-relay/reuse/tfo，用于固定客户端行为，避免不同版本默认值差异。")
-        else
+        if ! surge_link_verbose_params_enabled; then
             surge_notes+=("Surge 链接已关闭可选参数显式输出（SURGE_LINK_VERBOSE_PARAMS=off）。")
-        fi
-        surge_notes+=("当前服务器名称使用显示 ipv4/ipv6 地址，如需域名，可将链接中的 ip 替换为域名。")
-        if ! shadowtls_join_code_enabled && is_shadowtls_configured; then
-            surge_notes+=("ShadowTLS 可选 JOIN 码输出已关闭，设置 SHOW_JOIN_CODE=on 可显示。")
         fi
         if (( ${#share_users[@]} == 0 )); then
             yellow "当前无可用 Surge 协议链接"
@@ -318,14 +312,8 @@ subscription_share_render_payload_to_file() {
         echo
         print_share_section_title "[ Surge 链接 ]" "35;1"
         local -a surge_notes=()
-        if surge_link_verbose_params_enabled; then
-            surge_notes+=("Surge 链接显式输出 udp-relay/reuse/tfo，用于固定客户端行为，避免不同版本默认值差异。")
-        else
+        if ! surge_link_verbose_params_enabled; then
             surge_notes+=("Surge 链接已关闭可选参数显式输出（SURGE_LINK_VERBOSE_PARAMS=off）。")
-        fi
-        surge_notes+=("当前服务器名称使用显示 ipv4/ipv6 地址，如需域名，可将链接中的 ip 替换为域名。")
-        if ! shadowtls_join_code_enabled && is_shadowtls_configured; then
-            surge_notes+=("ShadowTLS 可选 JOIN 码输出已关闭，设置 SHOW_JOIN_CODE=on 可显示。")
         fi
         if (( ${#active_users_ref[@]} == 0 )); then
             yellow "当前无可用 Surge 协议链接"

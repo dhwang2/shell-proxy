@@ -99,7 +99,7 @@ modify_singbox_inbounds_logic() {
     esac
 
     local selected_user_name
-    selected_user_name="$(proxy_user_select_name_for_protocol_action "选择用户名 (${selected_proto_label})" "any" "$conf_file")"
+    selected_user_name="$(proxy_user_select_name_for_protocol_action "选择用户名" "any" "$conf_file")"
     [[ -z "$selected_user_name" ]] && { pause; return; }
     [[ "$selected_user_name" == "__none__" ]] && { yellow "请先添加用户名"; pause; return; }
     [[ "$selected_user_name" == "__invalid__" ]] && { red "输入无效"; pause; return; }
@@ -316,8 +316,7 @@ modify_singbox_inbounds_logic() {
             fi
             if protocol_install_session_active; then
                 protocol_install_apply_singbox_change
-                green "添加成功，配置已写入。"
-                yellow "退出“安装协议”菜单后将统一重启 sing-box。"
+                green “添加成功，已复用配置。”
             else
                 green "添加成功！重启 sing-box..."
                 protocol_install_apply_singbox_change
@@ -740,6 +739,7 @@ protocol_install_apply_snell_change() {
 protocol_install_session_queue_membership() {
     local target_name="${1:-}" key="${2:-}" template_id="${3:-}" route_sync_required="${4:-0}" conf_file="${5:-}"
     local membership_file route_sync_file
+    [[ -n "${target_name//[[:space:]]/}" ]] || return 1
     target_name="$(normalize_proxy_user_name "$target_name")"
     [[ -n "$target_name" && -n "$key" ]] || return 1
     PROTOCOL_INSTALL_PENDING_USER_MEMBERSHIP_TEXT+="${target_name}"$'\t'"${key}"$'\t'"${template_id}"$'\n'
@@ -806,21 +806,25 @@ protocol_install_session_apply_pending_metadata() {
 }
 
 protocol_install_session_flush_now() {
-    local pending_summary=""
     if ! protocol_install_session_has_pending_changes; then
         return 1
     fi
 
-    pending_summary="$(protocol_install_session_pending_summary)"
-    [[ -n "$pending_summary" ]] && yellow "正在应用新配置文件(${pending_summary})"
+    protocol_install_session_flush_inner() {
+        protocol_install_session_apply_pending_metadata
+        if (( ${PROTOCOL_INSTALL_PENDING_SNELL_RESTART:-0} == 1 )); then
+            protocol_install_restart_snell_now
+        fi
+        if (( ${PROTOCOL_INSTALL_PENDING_SINGBOX_RESTART:-0} == 1 )); then
+            protocol_install_restart_singbox_now
+        fi
+    }
 
-    protocol_install_session_apply_pending_metadata
-
-    if (( ${PROTOCOL_INSTALL_PENDING_SNELL_RESTART:-0} == 1 )); then
-        protocol_install_restart_snell_now
-    fi
-    if (( ${PROTOCOL_INSTALL_PENDING_SINGBOX_RESTART:-0} == 1 )); then
-        protocol_install_restart_singbox_now
+    if declare -F proxy_run_with_spinner_fg >/dev/null 2>&1; then
+        proxy_run_with_spinner_fg "正在应用新配置文件..." protocol_install_session_flush_inner
+    else
+        yellow "正在应用新配置文件..."
+        protocol_install_session_flush_inner
     fi
 
     PROTOCOL_INSTALL_PENDING_SINGBOX_RESTART=0
@@ -833,13 +837,8 @@ protocol_install_session_flush() {
         return 1
     fi
 
-    # Do NOT wrap the entire flush in a single outer spinner.  flush_now emits
-    # per-step messages ("正在应用新配置文件", "正在同步路由规则...") and each
-    # service restart is handled by config_apply_sync which already shows its own
-    # "sing-box 重启中..." spinner.  Wrapping everything in one outer spinner
-    # suppresses all intermediate output (the inner command runs as a background
-    # subshell where proxy_prompt_tty_available returns false), leaving the user
-    # staring at a single label with no indication of which step is slow.
+    # flush_now uses proxy_run_with_spinner_fg which runs the spinner in a
+    # background process and work in the foreground, preserving variable state.
     protocol_install_session_flush_now
 }
 
@@ -1207,7 +1206,7 @@ modify_snell_config() {
     current_ipv6=$(grep "^ipv6" "$SNELL_CONF" 2>/dev/null | cut -d= -f2 | tr -d ' ')
 
     local selected_user_name
-    selected_user_name="$(proxy_user_select_name_for_protocol_action "选择用户名 (snell-v5)" "any" "$conf_file_for_port")"
+    selected_user_name="$(proxy_user_select_name_for_protocol_action "选择用户名" "any" "$conf_file_for_port")"
     [[ -z "$selected_user_name" ]] && { pause; return; }
     [[ "$selected_user_name" == "__none__" ]] && { yellow "请先添加用户名"; pause; return; }
     [[ "$selected_user_name" == "__invalid__" ]] && { red "输入无效"; pause; return; }
