@@ -351,8 +351,6 @@ print_protocol_services_overview() {
     done <<< "$shadow_lines"
 
     proxy_menu_header "协议管理"
-    echo -e "  ${C_SECTION}已安装协议概览${C_RESET}"
-    proxy_menu_divider
     local memberships=""
     memberships="$(proxy_user_collect_membership_lines "active" "$conf_file" 2>/dev/null || true)"
 
@@ -424,17 +422,17 @@ print_protocol_services_overview() {
                 vless|tuic|trojan|anytls)
                     port="${inbound_port_by_tag["$in_tag"]:-}"
                     [[ -n "$port" ]] || port="未知"
-                    echo -e "    ${C_BULLET}●${C_RESET} ${C_PROTO}$(protocol_label_from_type "$proto")${C_RESET} - 端口: ${C_PORT}${port}${C_RESET}"
+                    echo -e "    ${C_BULLET}●${C_RESET} ${C_PROTO}$(protocol_label_from_type "$proto")${C_RESET} - ${C_PORT}${port}${C_RESET}"
                     has_protocol=1
                     ;;
                 ss)
                     back_port="${inbound_port_by_tag["$in_tag"]:-}"
                     if [[ "$back_port" =~ ^[0-9]+$ ]] && [[ -n "${shadow_front_port_by_backend_target["ss|${back_port}"]:-}" ]]; then
                         front_port="${shadow_front_port_by_backend_target["ss|${back_port}"]}"
-                        echo -e "    ${C_BULLET}●${C_RESET} ${C_PROTO}ss+shadow-tls-v3${C_RESET} - 端口: shadow-tls port:${C_PORT_FRONT}${front_port}${C_RESET} -> ss port:${C_PORT_BACK}${back_port}${C_RESET}"
+                        echo -e "    ${C_BULLET}●${C_RESET} ${C_PROTO}ss+shadow-tls-v3${C_RESET} - shadow-tls:${C_PORT_FRONT}${front_port}${C_RESET} -> ss:${C_PORT_BACK}${back_port}${C_RESET}"
                     else
                         [[ -n "$back_port" ]] || back_port="未知"
-                        echo -e "    ${C_BULLET}●${C_RESET} ${C_PROTO}ss${C_RESET} - 端口: ${C_PORT}${back_port}${C_RESET}"
+                        echo -e "    ${C_BULLET}●${C_RESET} ${C_PROTO}ss${C_RESET} - ${C_PORT}${back_port}${C_RESET}"
                     fi
                     has_protocol=1
                     ;;
@@ -442,10 +440,10 @@ print_protocol_services_overview() {
                     back_port="$snell_back_port"
                     if [[ "$back_port" =~ ^[0-9]+$ ]] && [[ -n "${shadow_front_port_by_backend_target["snell|${back_port}"]:-}" ]]; then
                         front_port="${shadow_front_port_by_backend_target["snell|${back_port}"]}"
-                        echo -e "    ${C_BULLET}●${C_RESET} ${C_PROTO}snell-v5+shadow-tls-v3${C_RESET} - 端口: shadow-tls port:${C_PORT_FRONT}${front_port}${C_RESET} -> snell port:${C_PORT_BACK}${back_port}${C_RESET}"
+                        echo -e "    ${C_BULLET}●${C_RESET} ${C_PROTO}snell-v5+shadow-tls-v3${C_RESET} - shadow-tls:${C_PORT_FRONT}${front_port}${C_RESET} -> snell:${C_PORT_BACK}${back_port}${C_RESET}"
                     else
                         [[ -n "$back_port" ]] || back_port="未知"
-                        echo -e "    ${C_BULLET}●${C_RESET} ${C_PROTO}snell-v5${C_RESET} - 端口: ${C_PORT}${back_port}${C_RESET}"
+                        echo -e "    ${C_BULLET}●${C_RESET} ${C_PROTO}snell-v5${C_RESET} - ${C_PORT}${back_port}${C_RESET}"
                     fi
                     has_protocol=1
                     ;;
@@ -455,7 +453,6 @@ print_protocol_services_overview() {
         if (( has_protocol == 0 )); then
             echo -e "    ${C_EMPTY}○ 无协议${C_RESET}"
         fi
-        echo
     done
 }
 
@@ -547,7 +544,6 @@ manage_protocol_services() {
         echo "  3) 启动所有服务"
         echo "  4) 查看服务状态"
         proxy_menu_rule "═"
-        echo
         if ! read_prompt choice "选择序号(回车取消): "; then
             return
         fi

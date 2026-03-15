@@ -343,7 +343,6 @@ routing_select_outbound() {
                 ((idx++))
             done
             proxy_menu_rule "═"
-            echo
         } >"$render_file"
         cat "$render_file" >&2
         rm -f "$render_file" 2>/dev/null || true

@@ -324,14 +324,13 @@ remove_protocol() {
             ((idx++))
         done
         local target_proto
-        printf '  %-4s %-14s %-6s %s\n' "#" "协议" "用户" "详情"
+        printf '  %-4s %-16s %-10s %s\n' "#" "协议" "用户" "详情"
         proxy_menu_divider
         for ((idx=0; idx<${#summary_protos[@]}; idx++)); do
-            printf '  %-4s %-14s %-6s %s\n' \
+            printf '  %-4s %-14s %-8s %s\n' \
                 "${summary_protos[$idx]}" "${summary_labels[$idx]}" "${summary_counts[$idx]}" "${summary_users[$idx]}"
         done
         proxy_menu_rule "═"
-        echo
         if ! read_prompt pick "选择序号(回车取消): "; then
             return
         fi

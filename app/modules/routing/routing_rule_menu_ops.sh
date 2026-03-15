@@ -178,7 +178,6 @@ routing_add_rule_interactive() {
         echo "f. 所有流量"
         echo "可多选: 1,2,3 或 b,s,r"
         proxy_menu_rule "═"
-        echo
     } >"$render_file"
     routing_print_rendered_file "$render_file"
     if ! read_prompt rt_choice "选择序号(回车取消): "; then
@@ -317,7 +316,6 @@ routing_delete_rule_interactive() {
             idx=$((idx + 1))
         done < <(echo "$state_json" | jq -c '.[]?' 2>/dev/null)
         proxy_menu_rule "═"
-        echo
     } >"$render_file"
     routing_print_rendered_file "$render_file"
     if ! read_prompt del_choice "选择序号(回车取消): "; then
@@ -417,7 +415,6 @@ routing_modify_rule_interactive() {
             idx=$((idx + 1))
         done < <(jq -c '.[]?' <<<"$state_json" 2>/dev/null)
         proxy_menu_rule "═"
-        echo
     } >"$render_file"
     routing_print_rendered_file "$render_file"
     local mod_choice=""
@@ -521,7 +518,6 @@ configure_routing_rules_menu() {
             echo "2. 删除分流规则"
             echo "3. 修改分流规则"
             proxy_menu_rule "═"
-            echo
         } >"$render_file"
         routing_print_rendered_file "$render_file"
         if ! read_prompt r_choice "选择序号(回车取消): "; then

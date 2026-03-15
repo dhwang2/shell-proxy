@@ -408,7 +408,6 @@ update_self() {
         echo "1. release"
         echo "2. repo"
         proxy_menu_rule "═"
-        echo
         local choice=""
         if ! read_prompt choice "选择序号(回车取消): "; then
             return 0

@@ -193,7 +193,6 @@ routing_menu_render_to_file() {
         echo "3. 直连出口"
         echo "4. 测试分流"
         proxy_menu_rule "═"
-        echo
     } >"$output_file"
 }
 
@@ -258,7 +257,6 @@ configure_direct_outbound_menu() {
         echo "4. 优先 IPv6"
         echo "5. AsIs"
         proxy_menu_rule "═"
-        echo
     } >"$render_file"
     routing_print_rendered_file "$render_file"
     if ! read_prompt mode_choice "选择序号(回车取消): "; then
@@ -318,7 +316,6 @@ manage_chain_proxy() {
             echo "2. 删除节点"
             echo "3. 查看节点"
             proxy_menu_rule "═"
-            echo
         } >"$render_file"
         routing_print_rendered_file "$render_file"
         if ! read_prompt c_choice "选择序号(回车取消): "; then

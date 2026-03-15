@@ -1148,7 +1148,6 @@ add_protocol() {
         echo "5. anytls"
         echo "6. snell-v5"
         proxy_menu_rule "═"
-        echo
         if ! read_prompt proto_type "选择(回车返回): "; then
             break
         fi

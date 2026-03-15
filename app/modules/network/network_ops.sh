@@ -56,7 +56,6 @@ manage_network_management() {
         echo "1. BBR 网络优化"
         echo "2. 服务器防火墙收敛"
         proxy_menu_rule "═"
-        echo
         if ! read_prompt choice "选择序号(回车取消): "; then
             return 0
         fi
@@ -131,7 +130,6 @@ manage_network_optimization() {
         echo "1. 重新优化 (更新参数)"
         echo "2. 卸载 BBR 优化"
         proxy_menu_rule "═"
-        echo
         if ! read_prompt choice "选择序号(回车取消): "; then
             return 0
         fi

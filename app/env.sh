@@ -77,6 +77,7 @@ proxy_menu_module_rel_paths() {
         service)
             cat <<'EOF'
 modules/service/service_ops.sh
+modules/protocol/protocol_runtime_ops.sh
 modules/user/user_meta_ops.sh
 modules/user/user_template_ops.sh
 modules/user/user_route_ops.sh
