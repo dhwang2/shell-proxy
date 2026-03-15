@@ -192,7 +192,8 @@ routing_menu_render_to_file() {
         echo "2. 配置分流"
         echo "3. 直连出口"
         echo "4. 测试分流"
-        proxy_menu_back_hint
+        proxy_menu_rule "═"
+        echo
     } >"$output_file"
 }
 
@@ -260,7 +261,7 @@ configure_direct_outbound_menu() {
         echo
     } >"$render_file"
     routing_print_rendered_file "$render_file"
-    if ! read_prompt mode_choice "选择: "; then
+    if ! read_prompt mode_choice "选择序号(回车取消): "; then
         return
     fi
     local new_mode=""
@@ -320,7 +321,7 @@ manage_chain_proxy() {
             echo
         } >"$render_file"
         routing_print_rendered_file "$render_file"
-        if ! read_prompt c_choice "选择: "; then
+        if ! read_prompt c_choice "选择序号(回车取消): "; then
             return
         fi
         case "$c_choice" in
@@ -361,7 +362,7 @@ manage_routing_menu() {
         ) >/dev/null 2>&1 &
         ui_clear
         routing_menu_view_cache_print "$conf_file"
-        if ! read_prompt routing_choice "选择: "; then
+        if ! read_prompt routing_choice "选择序号(回车取消): "; then
             return
         fi
         case "$routing_choice" in

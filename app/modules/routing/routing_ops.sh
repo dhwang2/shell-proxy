@@ -348,7 +348,7 @@ routing_select_outbound() {
         cat "$render_file" >&2
         rm -f "$render_file" 2>/dev/null || true
         local out_choice=""
-        if ! read_prompt out_choice "选择: "; then
+        if ! read_prompt out_choice "选择序号(回车取消): "; then
             return 1
         fi
         [[ -z "$out_choice" || "$out_choice" == "0" ]] && return 1

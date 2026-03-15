@@ -181,7 +181,7 @@ routing_add_rule_interactive() {
         echo
     } >"$render_file"
     routing_print_rendered_file "$render_file"
-    if ! read_prompt rt_choice "选择: "; then
+    if ! read_prompt rt_choice "选择序号(回车取消): "; then
         return 1
     fi
 
@@ -320,7 +320,7 @@ routing_delete_rule_interactive() {
         echo
     } >"$render_file"
     routing_print_rendered_file "$render_file"
-    if ! read_prompt del_choice "选择: "; then
+    if ! read_prompt del_choice "选择序号(回车取消): "; then
         return 0
     fi
     [[ -z "$del_choice" || "$del_choice" == "0" ]] && return 0
@@ -421,7 +421,7 @@ routing_modify_rule_interactive() {
     } >"$render_file"
     routing_print_rendered_file "$render_file"
     local mod_choice=""
-    if ! read_prompt mod_choice "选择: "; then
+    if ! read_prompt mod_choice "选择序号(回车取消): "; then
         return 0
     fi
     [[ -z "$mod_choice" || "$mod_choice" == "0" ]] && return 0
@@ -524,7 +524,7 @@ configure_routing_rules_menu() {
             echo
         } >"$render_file"
         routing_print_rendered_file "$render_file"
-        if ! read_prompt r_choice "选择: "; then
+        if ! read_prompt r_choice "选择序号(回车取消): "; then
             routing_rule_session_end
             return
         fi

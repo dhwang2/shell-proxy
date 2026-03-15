@@ -306,7 +306,7 @@ manage_firewall_convergence() {
         echo "2. 查看当前防火墙规则"
         proxy_menu_rule "═"
         echo
-        if ! read_prompt choice "选择: "; then
+        if ! read_prompt choice "选择序号(回车取消): "; then
             return 0
         fi
         [[ -z "$choice" ]] && return 0

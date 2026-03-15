@@ -410,7 +410,7 @@ update_self() {
         proxy_menu_rule "═"
         echo
         local choice=""
-        if ! read_prompt choice "选择: "; then
+        if ! read_prompt choice "选择序号(回车取消): "; then
             return 0
         fi
         [[ -z "$choice" ]] && return 0

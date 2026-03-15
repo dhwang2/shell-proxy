@@ -225,7 +225,7 @@ show_status_and_logs() {
             done
             proxy_menu_rule "═"
             echo
-            if ! read_prompt svc_choice "选择: "; then
+            if ! read_prompt svc_choice "选择序号(回车取消): "; then
                 return 0
             fi
 
@@ -266,8 +266,9 @@ show_status_and_logs() {
         echo "1. 查看脚本日志 (最近 50 行/静态)"
         echo "2. 查看 Watchdog 日志 (最近 50 行)"
         echo "3. 查看服务日志 (按协议选择)"
-        proxy_menu_back_hint
-        if ! read_prompt choice "选择: "; then
+        proxy_menu_rule "═"
+        echo
+        if ! read_prompt choice "选择序号(回车取消): "; then
             return
         fi
         case "$choice" in
@@ -311,8 +312,9 @@ show_config_details() {
         echo "1. sing-box"
         echo "2. snell-v5"
         echo "3. shadow-tls"
-        proxy_menu_back_hint
-        if ! read_prompt c_choice "选择: "; then
+        proxy_menu_rule "═"
+        echo
+        if ! read_prompt c_choice "选择序号(回车取消): "; then
             return
         fi
         [[ -z "$c_choice" ]] && return

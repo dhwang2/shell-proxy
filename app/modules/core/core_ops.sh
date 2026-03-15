@@ -19,8 +19,9 @@ manage_core() {
         echo "1. 查看版本"
         echo "2. 检查更新"
         echo "3. 执行更新"
-        proxy_menu_back_hint
-        if ! read_prompt choice "选择: "; then
+        proxy_menu_rule "═"
+        echo
+        if ! read_prompt choice "选择序号(回车取消): "; then
             return
         fi
         [[ -z "$choice" ]] && return

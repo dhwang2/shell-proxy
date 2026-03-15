@@ -84,8 +84,9 @@ manage_users() {
         echo "2. 添加用户"
         echo "3. 重置用户"
         echo "4. 删除用户"
-        proxy_menu_back_hint
-        if ! read_prompt choice "选择: "; then
+        proxy_menu_rule "═"
+        echo
+        if ! read_prompt choice "选择序号(回车取消): "; then
             return
         fi
         [[ -z "$choice" ]] && return
