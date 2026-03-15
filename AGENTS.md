@@ -28,6 +28,12 @@ shell-proxy/
 │   ├── agents/
 │   │   ├── security-reviewer.md
 │   │   └── shell-validator.md
+│   ├── skills/
+│   │   └── shell-proxy-verify/
+│   │       ├── SKILL.md
+│   │       └── references/
+│   │           ├── file-module-map.md
+│   │           └── dependency-graph.md
 │   └── settings.json
 ├── app/                               ← Application source
 │   ├── bootstrap.sh                   ← Install entry
@@ -97,8 +103,8 @@ Full specifications in [.claude/rules/verification.md](.claude/rules/verificatio
 | Tier | When | What |
 |---|---|---|
 | **Tier 1 — Syntax** | Every change | `bash -n` on modified files + `git diff --check` |
-| **Tier 2 — Minimum Real-World** | Single-module bug fixes, localized changes | Tier 1 + verify fix point + smoke-test adjacent paths in same module |
-| **Tier 3 — Regression** | Features, cross-module refactors, manifest changes | Tier 1 + full installation + menu traversal (user/protocol/routing/subscription/update) |
+| **Tier 2 — Minimum Real-World** | Single-module bug fixes, localized changes | Tier 1 + invoke `shell-proxy-verify` skill (tier=2): affected modules + direct dependents |
+| **Tier 3 — Regression** | Features, cross-module refactors, manifest changes | Tier 1 + invoke `shell-proxy-verify` skill (tier=3): full topological traversal of all modules |
 
 **Adaptive selection rule**: Agent evaluates the number of modified files, whether changes cross module boundaries, and whether `app/env.sh` or entry scripts are touched — then applies the matching tier.
 

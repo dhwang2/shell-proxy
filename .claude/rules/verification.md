@@ -15,24 +15,17 @@ Mandatory for all code modifications, no exceptions.
 
 When: single-module bug fixes, localized logic changes, style adjustments.
 
-1. **Fix-point verification**: Execute the specific code path affected by the change and confirm correct behavior.
-2. **Adjacent-path smoke test**: For functionalities strongly coupled to the fix point, run a single-pass verification of their core operations (e.g., if a protocol install function changed, also verify protocol list/status still works).
+Invoke the `shell-proxy-verify` skill with `tier=2` and the list of changed files. The skill resolves affected verification modules + their direct dependents, then executes structured procedures in dependency order.
 
-Scope boundary: only the modified module and its direct callers.
+See: `.claude/skills/shell-proxy-verify/SKILL.md`
 
 ### Tier 3 — Real-World Regression Verification (feature enhancements, cross-module changes)
 
 When: new features, module refactors, changes touching `app/env.sh` manifest, cross-module dependency changes, or any change spanning 3+ files.
 
-Based on Script Functionality Enhancement Specification — traverse all core functionalities:
+Invoke the `shell-proxy-verify` skill with `tier=3`. The skill executes all verification modules in topological order (VM-03 → VM-01 → VM-05 → VM-04 → VM-06 → VM-07 → VM-08 → VM-02 → VM-09 → VM-10 → VM-11), skipping VM-12 unless explicitly requested.
 
-1. **Installation flow**: Use actual installation commands for a genuine installation process.
-2. **Menu interaction simulation**: Walk through the interactive menu to verify navigation and option rendering.
-3. **User management**: Add user → verify user appears in listings and config.
-4. **Protocol operations**: Add protocol → verify service starts → verify runtime status → uninstall protocol → verify clean removal.
-5. **Routing rules**: Add traffic routing rules → verify rules apply → verify config reflects changes.
-6. **Subscription verification**: View subscription links → verify config file content matches expectations.
-7. **Self-update**: Trigger script update flow → verify version and file integrity post-update.
+See: `.claude/skills/shell-proxy-verify/SKILL.md`
 
 ### Tier Selection Guide
 
@@ -56,16 +49,18 @@ After modifying `app/` code, **real-world menu interaction verification on the t
 
 ### How to verify
 
-1. Deploy modified files to the target server (SCP + copy to `/etc/shell-proxy/modules/`).
-2. Rebuild bundles (`proxy_rebuild_menu_bundles_impl`).
-3. Enter the affected menu flow(s) and interact with them — confirm prompts render correctly, inputs work, and no display artifacts appear.
-4. Document the verification result in the workflow entry's **Verification** section.
+Use the `shell-proxy-verify` skill, which handles:
+1. Pre-flight: deploy files, rebuild bundles, validate JSON configs
+2. Module resolution: map changed files to verification modules via the file-module map
+3. Execution: run structured procedures with expected state checks
+
+See: `.claude/skills/shell-proxy-verify/SKILL.md`
 
 ### What counts as verification
 
-- Navigating into the modified menu and confirming the prompt/display renders correctly.
-- Completing at least one full interaction cycle (select option → see result → return).
-- If the change affects multiple menus, verify each affected menu.
+- Completing the skill's procedures for all resolved modules.
+- Each module's expected state checks pass.
+- If the change affects multiple menus, all affected modules are verified.
 
 ### What does NOT count
 
