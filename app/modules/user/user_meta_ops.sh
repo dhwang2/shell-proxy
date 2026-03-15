@@ -588,9 +588,8 @@ proxy_user_link_name_cached() {
         return 0
     fi
 
-    display_name="$(normalize_proxy_user_name "$DEFAULT_PROXY_USER_NAME")"
-    PROXY_USER_LINK_NAME_CACHE["$cache_key"]="$display_name"
-    printf '%s\n' "$display_name"
+    PROXY_USER_LINK_NAME_CACHE["$cache_key"]=""
+    return 1
 }
 
 proxy_user_link_name() {

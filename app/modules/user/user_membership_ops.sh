@@ -425,8 +425,7 @@ proxy_user_derived_cache_refresh() {
             disabled_count="${disabled_counts["${cache_name}|${cache_proto}"]:-0}"
             total_count=$(( active_count + disabled_count ))
             (( total_count > 0 )) || continue
-            desc="${label}(${total_count})"
-            parts+=("$desc")
+            parts+=("$label")
         done
         if (( ${#parts[@]} == 0 )); then
             summary="-"

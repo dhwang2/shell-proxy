@@ -934,3 +934,24 @@ Measured 6-protocol real-menu install for user `u193x1` -- before fix: `proto_5(
 - **Verification**:
   - `bash -n` passed on all modified files.
   - Deployed to `gcp-oregon`, rebuilt bundles, confirmed user list shows only dhwang and dhwang2 (no ghost "user").
+
+##### u-2-118 enhancement: streamline protocol install UX and fix ghost user v2 (2026-03-15)
+> **Target**: Clean up verbose prompts/hints across protocol installation flow and permanently fix ghost "user" group.
+
+- **Investigation**:
+  1. Ghost "user" reappeared after u-2-117 fix. Traced to `proxy_user_link_name_cached()` final fallback at line 591: `normalize_proxy_user_name "$DEFAULT_PROXY_USER_NAME"` returned "user" when neither `raw_name` nor `meta_name` resolved (snell membership collection with empty raw_name).
+
+- **Fixes**:
+  1. Removed `DEFAULT_PROXY_USER_NAME` fallback in `proxy_user_link_name_cached` — now returns empty + `return 1` when no name resolves (`user_meta_ops.sh`).
+  2. Simplified domain prompt: removed "域名 (需与 caddy 一致)" prefix from trojan/tuic/anytls installs (`protocol_install_singbox_ops.sh`).
+  3. Merged certificate warning: combined "准备通过 caddy 自动申请" + confirmation into single prompt line.
+  4. Simplified snell install: removed IPv6 hint, "配置已写入"/"退出菜单后统一重启" messages, "当前未配置" hint; added early return when snell already configured.
+  5. Simplified shadow-tls setup: removed backend port/recommended port/default port/Apple domain hints, startup success message, instance detail line (`protocol_shadowtls_setup_ops.sh`).
+  6. Suppressed restart success messages during session flush spinner (`_protocol_install_session_flush_inner`).
+  7. Removed "--- 添加 xxx ---" header lines from all 5 protocol install branches.
+  8. Removed protocol count `(N)` from user list summary and uninstall user list (`user_membership_ops.sh`, `protocol_ops.sh`).
+  9. Simplified reuse inbound message format; added numbered SS encryption method selector with `>&2` output to avoid stdout corruption.
+
+- **Verification**:
+  - `bash -n` passed on all 5 modified files.
+  - Deployed to `gcp-oregon`, rebuilt bundles. Confirmed: no ghost "user" in user list, clean prompts during protocol install, SS encryption selector works correctly.

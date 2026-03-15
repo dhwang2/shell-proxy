@@ -136,7 +136,7 @@ modify_singbox_inbounds_logic() {
     port_prompt="$(inbound_port_prompt_text)"
 
     if [[ "$type_code" == "1" ]]; then
-        echo "--- 添加 trojan ---"
+        :
         local tr_build tr_lines
         tr_build="$(protocol_install_build_trojan_inbound "$conf_file" "$listen_addr" "$selected_user_name" "$random_min_port" "$port_prompt")"
         case $? in
@@ -156,7 +156,7 @@ modify_singbox_inbounds_logic() {
         initial_user_name="$selected_user_name"
         initial_user_id="$tr_pass"
     elif [[ "$type_code" == "2" ]]; then
-        echo "--- 添加 vless reality ---"
+        :
         local v_build v_lines
         v_build="$(protocol_install_build_vless_inbound "$conf_file" "$listen_addr" "$selected_user_name" "$random_min_port" "$port_prompt" "$cur_uuid")"
         if [[ $? -ne 0 ]]; then
@@ -170,7 +170,7 @@ modify_singbox_inbounds_logic() {
         initial_user_id="$cur_uuid"
         new_inbound="$(printf '%s\n' "${v_lines[@]:3}")"
     elif [[ "$type_code" == "3" ]]; then
-        echo "--- 添加 tuic v5 ---"
+        :
         local t_build t_lines
         t_build="$(protocol_install_build_tuic_inbound "$conf_file" "$listen_addr" "$selected_user_name" "$random_min_port" "$random_max_port" "$cur_uuid")"
         case $? in
@@ -185,7 +185,7 @@ modify_singbox_inbounds_logic() {
         initial_user_id="$cur_uuid"
         new_inbound="$(printf '%s\n' "${t_lines[@]:3}")"
     elif [[ "$type_code" == "4" ]]; then
-        echo "--- 添加 ss ---"
+        :
         local ss_build ss_lines
         ss_build="$(protocol_install_build_ss_inbound "$conf_file" "$listen_addr" "$selected_user_name" "$random_min_port" "$port_prompt")"
         case $? in
@@ -214,7 +214,7 @@ modify_singbox_inbounds_logic() {
         shadowtls_target_port="$ss_port"
         shadowtls_target_proto="ss"
     elif [[ "$type_code" == "5" ]]; then
-        echo "--- 添加 anytls ---"
+        :
         local a_build a_lines
         a_build="$(protocol_install_build_anytls_inbound "$conf_file" "$listen_addr" "$selected_user_name" "$random_min_port" "$port_prompt")"
         case $? in
@@ -363,9 +363,8 @@ protocol_install_require_tls_cert() {
     fi
 
     if [[ ! -f "$cert_path" ]]; then
-        yellow "⚠️ 未检测到证书，准备通过 caddy 自动申请..." >&2
         local auto_cert=""
-        if ! read_prompt auto_cert "是否立即启动 caddy 并申请证书? [y/N]: "; then
+        if ! read_prompt auto_cert "⚠️ 未检测到证书，是否立即启动 caddy 并申请证书? [y/N]: "; then
             auto_cert=""
         fi
         if [[ "${auto_cert,,}" == "y" ]]; then
@@ -393,7 +392,7 @@ protocol_install_build_trojan_inbound() {
     tr_port="${tr_pick%%|*}"
 
     tr_domain="$(protocol_install_tls_domain_default)"
-    if ! read_prompt input_domain "域名 (需与 caddy 一致) [默认: ${tr_domain}]: "; then
+    if ! read_prompt input_domain "[默认: ${tr_domain}]: "; then
         input_domain=""
     fi
     tr_domain="${input_domain:-$tr_domain}"
@@ -482,7 +481,7 @@ protocol_install_build_tuic_inbound() {
     t_port="${t_pick%%|*}"
 
     t_domain="$(protocol_install_tls_domain_default)"
-    if ! read_prompt input_domain "域名 (需与 caddy 一致) [默认: $t_domain]: "; then
+    if ! read_prompt input_domain "[默认: $t_domain]: "; then
         input_domain=""
     fi
     t_domain=${input_domain:-$t_domain}
@@ -521,11 +520,20 @@ protocol_install_build_ss_inbound() {
     [[ -z "$ss_port" ]] && ss_port="$random_min_port"
     ss_pick="$(pick_singbox_port_with_override "$conf_file" "$ss_port" "$port_prompt")"
     ss_port="${ss_pick%%|*}"
-    ss_method="2022-blake3-aes-128-gcm"
-    if ! read_prompt input_method "加密方式 [默认: $ss_method，可选: 2022-blake3-aes-128-gcm/2022-blake3-aes-256-gcm/2022-blake3-chacha20-poly1305]: "; then
+    local -a ss_methods=("2022-blake3-aes-128-gcm" "2022-blake3-aes-256-gcm" "2022-blake3-chacha20-poly1305")
+    local mi
+    for mi in "${!ss_methods[@]}"; do
+        echo "  $(( mi + 1 )). ${ss_methods[$mi]}" >&2
+    done
+    ss_method="${ss_methods[0]}"
+    if ! read_prompt input_method "加密方式 [默认:${ss_method}]: "; then
         input_method=""
     fi
-    ss_method=${input_method:-$ss_method}
+    if [[ -n "$input_method" && "$input_method" =~ ^[1-3]$ ]]; then
+        ss_method="${ss_methods[$(( input_method - 1 ))]}"
+    elif [[ -n "$input_method" ]]; then
+        ss_method="$input_method"
+    fi
     if ! is_ss2022_method "$ss_method"; then
         return 3
     fi
@@ -570,7 +578,7 @@ protocol_install_build_anytls_inbound() {
     a_pass=${input_pass:-$a_pass}
 
     a_domain="$(protocol_install_tls_domain_default)"
-    if ! read_prompt input_domain "域名 (需与 caddy 一致) [默认: $a_domain]: "; then
+    if ! read_prompt input_domain "[默认: $a_domain]: "; then
         input_domain=""
     fi
     a_domain=${input_domain:-$a_domain}
@@ -788,10 +796,10 @@ protocol_install_session_apply_pending_metadata() {
 _protocol_install_session_flush_inner() {
     protocol_install_session_apply_pending_metadata
     if (( ${PROTOCOL_INSTALL_PENDING_SNELL_RESTART:-0} == 1 )); then
-        protocol_install_restart_snell_now
+        protocol_install_restart_snell_now >/dev/null 2>&1
     fi
     if (( ${PROTOCOL_INSTALL_PENDING_SINGBOX_RESTART:-0} == 1 )); then
-        protocol_install_restart_singbox_now
+        protocol_install_restart_singbox_now >/dev/null 2>&1
     fi
 }
 
@@ -847,7 +855,7 @@ proxy_select_install_inbound_for_protocol() {
     if [[ ${#rows[@]} -eq 1 ]]; then
         local auto_idx auto_tag auto_port _auto_desc
         IFS=$'\t' read -r auto_idx auto_tag auto_port _auto_desc <<<"${rows[0]}"
-        printf '复用已有 %s 入站: %s 端口 %s\n' "$(proxy_user_protocol_label "$proto")" "$auto_tag" "$auto_port" >&2
+        printf '复用已有 %s 入站协议\n' "$(proxy_user_protocol_label "$proto")" >&2
         echo "$auto_idx"
         return 0
     fi
@@ -1069,7 +1077,7 @@ proxy_append_user_to_existing_inbound() {
 
     local proto_label
     proto_label="$(proxy_user_protocol_label "$proto")"
-    green "已为用户名 ${target_name} 复用 ${proto_label} 入站: 端口 ${target_port:--}"
+    green "已为用户名 ${target_name} 复用 ${proto_label}:${target_port:--} 入站"
     return 0
 }
 
@@ -1192,8 +1200,8 @@ modify_snell_config() {
     selected_user_name="$(normalize_proxy_user_name "$selected_user_name")"
 
     if [[ "$has_conf" == "yes" ]]; then
-        yellow "🔔 提示: snell-v5 当前为单实例模式；再次添加不会新建第 2 个节点，而是覆盖现有 snell-v5。若需继续，请先删除现有 snell-v5。"
-        [[ -z "$current_port" ]] && current_port="14443"
+        yellow "🔔 提示: snell-v5 当前为单实例模式,不可重复添加。"
+        return
     else
         current_port="$(gen_preferred_inbound_port "snell" "$conf_file_for_port")"
         [[ -z "$current_port" ]] && current_port="$random_min_port"
@@ -1203,7 +1211,7 @@ modify_snell_config() {
     [[ -z "$current_ipv6" ]] && current_ipv6="false"
 
     if [[ "$has_conf" == "no" ]]; then
-        yellow "当前未配置 snell-v5，将按你的输入创建配置。"
+        :
     fi
 
     local new_port new_psk
@@ -1274,7 +1282,6 @@ modify_snell_config() {
     fi
 
     local cur_ipv6_yn="n"; [[ "$current_ipv6" == "true" ]] && cur_ipv6_yn="y"
-    echo -e "\n\033[33m提示: 开启 IPv6 (:::) 通常可同时支持 IPv4 和 IPv6 访问。\033[0m"
     if ! read_prompt new_ipv6_yn "开启双栈? [y/n, 当前: $cur_ipv6_yn]: "; then
         new_ipv6_yn=""
     fi
@@ -1349,11 +1356,5 @@ EOF
     if [[ "${st_enable,,}" == "y" ]]; then
         configure_shadowtls_for_target "$new_port" "snell" || true
     fi
-    if protocol_install_session_active; then
-        protocol_install_apply_snell_change
-        green "snell-v5 配置已写入。"
-        yellow "退出“安装协议”菜单后将统一重启 snell-v5。"
-    else
-        protocol_install_apply_snell_change
-    fi
+    protocol_install_apply_snell_change
 }

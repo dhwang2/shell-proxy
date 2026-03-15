@@ -279,3 +279,13 @@
   - [x] Updated `proxy_user_share_suffix_cached` and `proxy_user_link_name_cached` guards from `!= "user"` to `[[ -n ]]`.
   - [x] Unified protocol install success message to `协议安装成功` for both first-install and reuse paths.
   - [x] Re-validated with `bash -n`; deployed and verified on `gcp-oregon`.
+- [x] **u-2-118 enhancement: streamline protocol install UX and fix ghost user v2 (2026-03-15)**
+  - [x] Fixed ghost "user" root cause v2: removed `DEFAULT_PROXY_USER_NAME` fallback in `proxy_user_link_name_cached`.
+  - [x] Simplified domain/certificate prompts: removed verbose hints, merged cert warning into single prompt.
+  - [x] Simplified snell install: removed IPv6 hint, "配置已写入"/"统一重启" messages, "未配置" hint; block duplicate snell install with immediate return.
+  - [x] Simplified shadow-tls setup: removed backend port/recommended port/default port hints, instance detail line; kept occupied ports display only when non-empty.
+  - [x] Suppressed restart messages during session flush spinner.
+  - [x] Removed "--- 添加 xxx ---" header lines from all protocol installs.
+  - [x] Removed protocol count from user list and uninstall list displays.
+  - [x] Simplified reuse messages; added numbered SS encryption method selector with stderr output.
+  - [x] Re-validated with `bash -n`; deployed and verified on `gcp-oregon`.

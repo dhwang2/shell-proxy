@@ -314,7 +314,7 @@ remove_protocol() {
                 [[ -n "$row" ]] || continue
                 IFS=$'\t' read -r name active_count disabled_count <<<"$row"
                 total_count=$(( active_count + disabled_count ))
-                summary_parts+=("${name}(${total_count})")
+                summary_parts+=("${name}")
             done
             summary_protos+=("$idx")
             summary_labels+=("$(proxy_user_protocol_label "$proto")")

@@ -208,18 +208,11 @@ configure_shadowtls_for_target() {
     local occupied_ports
     occupied_ports="$(shadowtls_occupied_ports_summary "$conf_file" "$service_name" 2>/dev/null || true)"
 
-    echo -e "\033[33m提示: shadow-tls-v3 后端端口: ${target_proto}:${target_port}\033[0m"
     if [[ -n "${occupied_ports// }" ]]; then
         echo -e "\033[33m提示: shadow-tls-v3 已占用端口: ${occupied_ports}\033[0m"
-    else
-        echo -e "\033[33m提示: shadow-tls-v3 已占用端口: 无\033[0m"
     fi
-    if [[ -n "${default_st_port// }" ]]; then
-        echo -e "\033[33m提示: 推荐可用端口: ${default_st_port}\033[0m"
-    fi
-    echo -e "\033[33m提示: 默认端口为随机常用端口，并自动避开现有协议冲突。\033[0m"
     while :; do
-        if ! read_prompt st_port "shadow-tls-v3 端口 [默认: ${default_st_port}, 勿冲突]: "; then
+        if ! read_prompt st_port "shadow-tls-v3 端口 [默认: ${default_st_port}]: "; then
             st_port=""
         fi
         st_port="${st_port:-$default_st_port}"
@@ -244,7 +237,6 @@ configure_shadowtls_for_target() {
 
     local st_host_default st_host st_pass
     st_host_default="$(pick_decoy_sni_domain)"
-    yellow "默认优先推荐 Apple/Microsoft 伪装域名（已自动排除已使用项）。"
     if ! read_prompt st_host "伪装域名 [默认: ${st_host_default}]: "; then
         st_host=""
     fi
@@ -261,7 +253,5 @@ configure_shadowtls_for_target() {
     systemctl restart "$service_name"
     touch "${SHADOWTLS_MARKER:-${WORK_DIR}/.shadowtls_configured}"
 
-    check_service_result "$service_name" "启动" "shadow-tls-v3(${target_proto}:${target_port})"
-    echo -e "实例: ${service_name} | 端口: ${st_port} | 密码: ${st_pass} | 域名: ${st_host} | 后端: ${target_proto}:${target_port}"
     return 0
 }
