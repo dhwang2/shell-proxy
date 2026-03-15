@@ -888,3 +888,18 @@ Measured 6-protocol real-menu install for user `u193x1` -- before fix: `proto_5(
 - **Verification**:
   - `bash -n` passed on all 18 modified files.
   - Deployed to `gcp-oregon`, rebuilt bundles, verified menu interactions.
+
+##### u-2-115 refactor+ux: DRY separator color, universal 2-space menu indent (2026-03-15)
+> **Target**: Eliminate DRY violations in separator rendering and standardize 2-space indent across all sub-menus.
+
+- **Changes**:
+  1. Added optional 3rd `color` parameter to `proxy_menu_rule()` in `common_ops.sh` (default: `36`/cyan).
+  2. Replaced 3 hardcoded `echo -e '\033[1;37m═══...\033[0m'` in `management.sh` with `proxy_menu_rule "═" 68 "1;37"`.
+  3. Replaced `C_SEP`/`sep_line` pattern in `runtime_status_ops.sh` with 3 `proxy_menu_rule "═" 68 "1;37"` calls; removed `C_SEP` variable.
+  4. Added 2-space indent to 12+ static menus across `core_ops.sh`, `network_ops.sh`, `network_firewall_ops.sh`, `log_ops.sh`, `routing_menu_support_ops.sh`, `routing_rule_menu_ops.sh`.
+  5. Added 2-space indent to 8 dynamic `printf`/`echo` menu lines across `user_ops.sh`, `user_membership_ops.sh`, `routing_context_ops.sh`, `routing_ops.sh`, `routing_res_socks_ops.sh`, `protocol_ops.sh`, `log_ops.sh`.
+  6. Changed service menu numbering from `)` to `.` in `service_ops.sh`.
+
+- **Verification**:
+  - `bash -n` passed on all 16 modified files.
+  - Deployed to `gcp-oregon`, rebuilt bundles.

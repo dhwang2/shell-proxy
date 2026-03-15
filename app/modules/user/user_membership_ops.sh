@@ -554,7 +554,7 @@ proxy_user_select_name_for_protocol_action() {
     echo "$title" >&2
     local idx=1 name
     for name in "${names[@]}"; do
-        printf '%d. %s\n' "$idx" "$name" >&2
+        printf '  %d. %s\n' "$idx" "$name" >&2
         ((idx++))
     done
 

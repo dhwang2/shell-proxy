@@ -346,7 +346,7 @@ proxy_main_menu_render_to_file() {
         export PROXY_TTY_RENDER_FORCE=1
         print_dashboard
         render_main_menu_items
-        echo -e '\033[1;31m════════════════════════════════════════════════════════════════════\033[0m'
+        proxy_menu_rule "═" 68 "1;37"
     ) >"$output_file"
 }
 
@@ -406,7 +406,7 @@ proxy_main_menu_print() {
         export PROXY_TTY_RENDER_FORCE=1
         print_dashboard
         render_main_menu_items
-        echo -e '\033[1;31m════════════════════════════════════════════════════════════════════\033[0m'
+        proxy_menu_rule "═" 68 "1;37"
         unset PROXY_TTY_RENDER_FORCE
     fi
 }
@@ -518,7 +518,7 @@ render_main_menu_items() {
         [[ -n "$row" ]] || continue
         IFS="$MANAGEMENT_FIELD_SEP" read -r choice label group handler <<<"$row"
         if [[ "$choice" == "0" ]]; then
-            echo -e '\033[1;31m════════════════════════════════════════════════════════════════════\033[0m'
+            proxy_menu_rule "═" 68 "1;37"
         fi
         printf "%8s %s\n" "(${choice})" "$label"
     done

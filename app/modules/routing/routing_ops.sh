@@ -338,7 +338,7 @@ routing_select_outbound() {
             local idx=1
             local label
             for label in "${labels[@]}"; do
-                echo "${idx}. ${label}"
+                echo "  ${idx}. ${label}"
                 ((idx++))
             done
             proxy_menu_rule "═"

@@ -16,9 +16,9 @@ manage_core() {
     while :; do
         ui_clear
         proxy_menu_header "内核管理"
-        echo "1. 查看版本"
-        echo "2. 检查更新"
-        echo "3. 执行更新"
+        echo "  1. 查看版本"
+        echo "  2. 检查更新"
+        echo "  3. 执行更新"
         proxy_menu_rule "═"
         if ! read_prompt choice "选择序号(回车取消): "; then
             return

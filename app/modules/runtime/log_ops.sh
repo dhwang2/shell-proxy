@@ -218,7 +218,7 @@ show_status_and_logs() {
             local entry label
             for entry in "${choices[@]}"; do
                 label="${entry#*|}"
-                echo "${idx}. ${label}"
+                echo "  ${idx}. ${label}"
                 idx=$((idx + 1))
             done
             proxy_menu_rule "═"
@@ -259,9 +259,9 @@ show_status_and_logs() {
     while :; do
         ui_clear
         proxy_menu_header "运行日志"
-        echo "1. 查看脚本日志 (最近 50 行/静态)"
-        echo "2. 查看 Watchdog 日志 (最近 50 行)"
-        echo "3. 查看服务日志 (按协议选择)"
+        echo "  1. 查看脚本日志 (最近 50 行/静态)"
+        echo "  2. 查看 Watchdog 日志 (最近 50 行)"
+        echo "  3. 查看服务日志 (按协议选择)"
         proxy_menu_rule "═"
         if ! read_prompt choice "选择序号(回车取消): "; then
             return
@@ -302,9 +302,9 @@ show_config_details() {
     while :; do
         ui_clear
         proxy_menu_header "配置详情"
-        echo "1. sing-box"
-        echo "2. snell-v5"
-        echo "3. shadow-tls"
+        echo "  1. sing-box"
+        echo "  2. snell-v5"
+        echo "  3. shadow-tls"
         proxy_menu_rule "═"
         if ! read_prompt c_choice "选择序号(回车取消): "; then
             return

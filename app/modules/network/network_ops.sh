@@ -53,8 +53,8 @@ manage_network_management() {
     while :; do
         ui_clear
         proxy_menu_header "网络管理"
-        echo "1. BBR 网络优化"
-        echo "2. 服务器防火墙收敛"
+        echo "  1. BBR 网络优化"
+        echo "  2. 服务器防火墙收敛"
         proxy_menu_rule "═"
         if ! read_prompt choice "选择序号(回车取消): "; then
             return 0
@@ -126,8 +126,8 @@ manage_network_optimization() {
     local choice confirm
     if is_bbr_enabled; then
         green "BBR 已启用"
-        echo "1. 重新优化 (更新参数)"
-        echo "2. 卸载 BBR 优化"
+        echo "  1. 重新优化 (更新参数)"
+        echo "  2. 卸载 BBR 优化"
         proxy_menu_rule "═"
         if ! read_prompt choice "选择序号(回车取消): "; then
             return 0

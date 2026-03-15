@@ -188,10 +188,10 @@ routing_menu_render_to_file() {
         else
             routing_show_status "$conf_file"
         fi
-        echo "1. 链式代理"
-        echo "2. 配置分流"
-        echo "3. 直连出口"
-        echo "4. 测试分流"
+        echo "  1. 链式代理"
+        echo "  2. 配置分流"
+        echo "  3. 直连出口"
+        echo "  4. 测试分流"
         proxy_menu_rule "═"
     } >"$output_file"
 }
@@ -251,11 +251,11 @@ configure_direct_outbound_menu() {
         fi
         echo "当前设置: $(routing_direct_mode_label "$current")"
         proxy_menu_divider
-        echo "1. 仅 IPv4"
-        echo "2. 仅 IPv6"
-        echo "3. 优先 IPv4"
-        echo "4. 优先 IPv6"
-        echo "5. AsIs"
+        echo "  1. 仅 IPv4"
+        echo "  2. 仅 IPv6"
+        echo "  3. 优先 IPv4"
+        echo "  4. 优先 IPv6"
+        echo "  5. AsIs"
         proxy_menu_rule "═"
     } >"$render_file"
     routing_print_rendered_file "$render_file"
@@ -311,9 +311,9 @@ manage_chain_proxy() {
                 fi
             fi
             proxy_menu_divider
-            echo "1. 添加节点"
-            echo "2. 删除节点"
-            echo "3. 查看节点"
+            echo "  1. 添加节点"
+            echo "  2. 删除节点"
+            echo "  3. 查看节点"
             proxy_menu_rule "═"
         } >"$render_file"
         routing_print_rendered_file "$render_file"

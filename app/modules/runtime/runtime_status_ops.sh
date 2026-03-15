@@ -709,20 +709,14 @@ print_dashboard() {
 
     status="$(get_overall_status)"
 
-    local C_SEP=""
-    if [[ -n "${PROXY_TTY_RENDER_FORCE:-}" || -t 1 ]]; then
-        C_SEP=$'\033[1;31m'
-    fi
-
-    local sep_line="${C_SEP}════════════════════════════════════════════════════════════════════${C_RESET}"
-    echo -e "$sep_line"
+    proxy_menu_rule "═" 68 "1;37"
     echo -e "${C_TITLE}                  shell-proxy 一键部署 [服务端]${C_RESET}"
     echo -e "${C_TITLE}         作者: dhwang2    命令: proxy     版本: ${version}${C_RESET}"
-    echo -e "$sep_line"
+    proxy_menu_rule "═" 68 "1;37"
     echo -e "  ${C_LABEL}系统:${C_RESET} ${C_VAL_SYS}${os_id}${C_RESET} ${C_LABEL}| 架构:${C_RESET} ${C_VAL_SYS}${arch}${C_RESET} ${C_LABEL}| 网络栈:${C_RESET} ${C_VAL_SYS}${ip_stack}${C_RESET}"
     echo -e "  ${C_LABEL}状态:${C_RESET} ${status}"
     echo -e "  ${C_LABEL}协议:${C_RESET} ${C_VAL_PROTO}${protos}${C_RESET}"
     echo -e "  ${C_LABEL}端口:${C_RESET} ${C_VAL_PORT}${ports}${C_RESET}"
     echo -e "  ${C_LABEL}分流:${C_RESET} ${C_VAL_RULE}${rules}条规则${C_RESET}"
-    echo -e "$sep_line"
+    proxy_menu_rule "═" 68 "1;37"
 }

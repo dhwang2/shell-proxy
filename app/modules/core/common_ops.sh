@@ -46,11 +46,11 @@ fi
 
 if ! declare -F proxy_menu_rule >/dev/null 2>&1; then
 proxy_menu_rule() {
-    local char="${1:-─}" width="${2:-68}" line=""
+    local char="${1:-─}" width="${2:-68}" color="${3:-36}" line=""
     printf -v line '%*s' "$width" ''
     line="${line// /$char}"
     if proxy_ui_color_enabled; then
-        printf '\033[36m%s\033[0m\n' "$line"
+        printf '\033[%sm%s\033[0m\n' "$color" "$line"
     else
         printf '%s\n' "$line"
     fi

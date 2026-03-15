@@ -302,8 +302,8 @@ manage_firewall_convergence() {
         echo "目标开放端口:"
         network_firewall_render_desired_ports "$conf_file"
         proxy_menu_divider
-        echo "1. 应用/更新防火墙收敛"
-        echo "2. 查看当前防火墙规则"
+        echo "  1. 应用/更新防火墙收敛"
+        echo "  2. 查看当前防火墙规则"
         proxy_menu_rule "═"
         if ! read_prompt choice "选择序号(回车取消): "; then
             return 0

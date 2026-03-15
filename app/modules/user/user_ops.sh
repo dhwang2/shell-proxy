@@ -79,10 +79,10 @@ manage_users() {
         ) >/dev/null 2>&1 &
         ui_clear
         proxy_menu_header "用户管理"
-        echo "1. 用户列表"
-        echo "2. 添加用户"
-        echo "3. 重置用户"
-        echo "4. 删除用户"
+        echo "  1. 用户列表"
+        echo "  2. 添加用户"
+        echo "  3. 重置用户"
+        echo "  4. 删除用户"
         proxy_menu_rule "═"
         if ! read_prompt choice "选择序号(回车取消): "; then
             return
@@ -196,7 +196,7 @@ list_user_groups() {
     local idx=1 row name proto_list active_count disabled_count summary
     for row in "${rows[@]}"; do
         IFS=$'\t' read -r name proto_list active_count disabled_count summary <<<"$row"
-        printf "%d. %s [协议:%s]\n" "$idx" "$name" "$summary"
+        printf "  %d. %s [协议:%s]\n" "$idx" "$name" "$summary"
         ((idx++))
     done
 }
@@ -215,7 +215,7 @@ choose_user_group_name() {
     local idx=1 row name proto_list active_count disabled_count summary
     for row in "${rows[@]}"; do
         IFS=$'\t' read -r name proto_list active_count disabled_count summary <<<"$row"
-        printf "%d. %s\n" "$idx" "$name" >&2
+        printf "  %d. %s\n" "$idx" "$name" >&2
         ((idx++))
     done
 

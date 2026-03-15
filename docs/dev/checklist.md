@@ -259,3 +259,10 @@
   - [x] Extended share divider from 60→68 chars; double-space user name separator in uninstall table.
   - [x] Removed 13 extra blank-line `echo` and 5 `\n` prefixes from protocol install headers.
   - [x] Re-validated with `bash -n` on all 18 modified files; deployed and rebuilt on `gcp-oregon`.
+
+- [x] **u-2-115 refactor+ux: DRY separator color, universal 2-space menu indent (2026-03-15)**
+  - [x] Added optional `color` parameter to `proxy_menu_rule()`; replaced 6 hardcoded separator lines in `management.sh` and `runtime_status_ops.sh` with `proxy_menu_rule "═" 68 "1;37"`.
+  - [x] Changed main menu divider color from red to white (`1;31m` → `1;37m`).
+  - [x] Added 2-space indent to all remaining sub-menus: 12+ static menus across 6 files, 8 dynamic `printf`/`echo` lines across 6 files.
+  - [x] Changed service menu `)` to `.` numbering style.
+  - [x] Re-validated with `bash -n` on all 16 modified files; deployed and rebuilt on `gcp-oregon`.

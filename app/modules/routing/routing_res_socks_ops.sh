@@ -92,7 +92,7 @@ res_socks_pick_node_id_interactive() {
     proxy_menu_header "$title" >&2
     local idx=1
     for label in "${labels[@]}"; do
-        echo "${idx}. ${label}" >&2
+        echo "  ${idx}. ${label}" >&2
         ((idx++))
     done
 

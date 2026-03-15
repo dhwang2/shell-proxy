@@ -376,7 +376,7 @@ remove_protocol() {
         local idx=1 row active_count disabled_count
         for row in "${name_rows[@]}"; do
             IFS=$'\t' read -r target_name active_count disabled_count <<<"$row"
-            printf '%d. %s\n' "$idx" "$target_name"
+            printf '  %d. %s\n' "$idx" "$target_name"
             ((idx++))
         done
         if ! read_prompt pick "选择序号(回车取消): "; then

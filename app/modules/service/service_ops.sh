@@ -539,10 +539,10 @@ manage_protocol_services() {
         ui_clear
         print_protocol_services_overview
         proxy_menu_divider
-        echo "  1) 重启所有服务"
-        echo "  2) 停止所有服务"
-        echo "  3) 启动所有服务"
-        echo "  4) 查看服务状态"
+        echo "  1. 重启所有服务"
+        echo "  2. 停止所有服务"
+        echo "  3. 启动所有服务"
+        echo "  4. 查看服务状态"
         proxy_menu_rule "═"
         if ! read_prompt choice "选择序号(回车取消): "; then
             return
