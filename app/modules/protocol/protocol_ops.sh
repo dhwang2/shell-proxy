@@ -304,6 +304,7 @@ remove_protocol() {
         local row summary_parts name active_count disabled_count total_count user_count idx
         local -a protocol_name_rows
         local -a protocol_user_counts=()
+        local -a summary_protos=() summary_labels=() summary_counts=() summary_users=()
         idx=1
         for proto in "${protocol_names[@]}"; do
             mapfile -t protocol_name_rows < <(remove_protocol_collect_name_rows_from_text "$proto" "$cached_name_rows_text")
@@ -316,11 +317,19 @@ remove_protocol() {
                 total_count=$(( active_count + disabled_count ))
                 summary_parts+=("${name}(${total_count})")
             done
-            summary_block+="${idx}. $(proxy_user_protocol_label "$proto")(${user_count}): ${summary_parts[*]:-无}"$'\n'
+            summary_protos+=("$idx")
+            summary_labels+=("$(proxy_user_protocol_label "$proto")")
+            summary_counts+=("$user_count")
+            local IFS='  '; summary_users+=("${summary_parts[*]:-无}"); unset IFS
             ((idx++))
         done
         local target_proto
-        printf '%s' "$summary_block"
+        printf '  %-4s %-14s %-6s %s\n' "#" "协议" "用户" "详情"
+        proxy_menu_divider
+        for ((idx=0; idx<${#summary_protos[@]}; idx++)); do
+            printf '  %-4s %-14s %-6s %s\n' \
+                "${summary_protos[$idx]}" "${summary_labels[$idx]}" "${summary_counts[$idx]}" "${summary_users[$idx]}"
+        done
         proxy_menu_rule "═"
         echo
         if ! read_prompt pick "选择序号(回车取消): "; then

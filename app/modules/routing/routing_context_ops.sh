@@ -281,28 +281,25 @@ routing_show_status_uncached() {
         [[ -n "$state_json" ]] || state_json="$(routing_load_state_json)"
     fi
 
-    echo
     if routing_context_is_user; then
         echo "当前用户: ${ROUTING_USER_CONTEXT_NAME}"
         proxy_menu_divider
     fi
-    echo "$(routing_colorize "36;1" "出口状态")"
-    proxy_menu_divider
-    echo "直连: ${direct_label}"
+    echo "出口状态:"
+    echo "  直连: ${direct_label}"
     if routing_status_global_fast_path_ready; then
-        echo "代理: $(routing_colorize "31;1" "○ 无节点")"
+        echo "  代理: $(routing_colorize "31;1" "○ 无节点")"
     elif routing_res_socks_ready "$conf_file"; then
-        echo "代理: $(routing_colorize "36;1" "● $(res_socks_nodes_count) 个节点")"
+        echo "  代理: $(routing_colorize "36;1" "● $(res_socks_nodes_count) 个节点")"
     else
-        echo "代理: $(routing_colorize "31;1" "○ 无节点")"
+        echo "  代理: $(routing_colorize "31;1" "○ 无节点")"
     fi
     proxy_menu_divider
     if routing_context_is_user; then
-        echo "$(routing_colorize "36;1" "当前用户分流规则")"
+        echo "当前用户分流规则:"
     else
-        echo "$(routing_colorize "36;1" "分流规则")"
+        echo "分流规则:"
     fi
-    proxy_menu_divider
     if routing_context_is_user; then
         routing_render_rules_brief "$state_json"
     else
