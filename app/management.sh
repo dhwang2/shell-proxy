@@ -20,9 +20,9 @@ proxy_source_guard_key() {
         abs_target="$target"
     fi
 
-    resolved_dir="$(cd "$(dirname "$abs_target")" 2>/dev/null && pwd -P)" || resolved_dir=""
+    resolved_dir="$(cd "${abs_target%/*}" 2>/dev/null && pwd -P)" || resolved_dir=""
     if [[ -n "$resolved_dir" ]]; then
-        printf '%s/%s\n' "$resolved_dir" "$(basename "$abs_target")"
+        printf '%s/%s\n' "$resolved_dir" "${abs_target##*/}"
         return 0
     fi
 
@@ -278,24 +278,25 @@ proxy_main_menu_view_code_file() {
 }
 
 proxy_main_menu_view_code_fingerprint() {
-    local file="" rel_path="" file_sig="" rows=""
+    local file="" rel_path="" rows=""
 
+    # Use stat cache directly (populated by proxy_fingerprint_sweep) to avoid
+    # forking stat subshells. Falls back to calc_file_meta_signature for cache misses.
     file="${BASH_SOURCE[0]}"
-    file_sig="$(calc_file_meta_signature "$file" 2>/dev/null || echo "missing")"
-    rows+="${file}|${file_sig}"$'\n'
+    rows+="${file}|${_PROXY_STAT_CACHE[$file]:-$(calc_file_meta_signature "$file" 2>/dev/null || echo "missing")}"$'\n'
 
     file="${SCRIPT_DIR}/env.sh"
-    file_sig="$(calc_file_meta_signature "$file" 2>/dev/null || echo "missing")"
-    rows+="${file}|${file_sig}"$'\n'
+    rows+="${file}|${_PROXY_STAT_CACHE[$file]:-$(calc_file_meta_signature "$file" 2>/dev/null || echo "missing")}"$'\n'
 
     while IFS= read -r rel_path; do
         [[ -n "$rel_path" ]] || continue
         file="${MODULE_ROOT}/${rel_path}"
-        file_sig="$(calc_file_meta_signature "$file" 2>/dev/null || echo "missing")"
-        rows+="${rel_path}|${file_sig}"$'\n'
+        rows+="${rel_path}|${_PROXY_STAT_CACHE[$file]:-$(calc_file_meta_signature "$file" 2>/dev/null || echo "missing")}"$'\n'
     done < <(proxy_base_module_rel_paths)
 
-    printf '%s' "$rows" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    local _ck=""
+    _ck="$(printf '%s' "$rows" | cksum 2>/dev/null)" || true
+    printf '%s\n' "${_ck/ /:}"
 }
 
 proxy_main_menu_view_cache_is_fresh() {
@@ -309,14 +310,15 @@ proxy_main_menu_view_cache_is_fresh() {
     (( ttl >= 0 )) || ttl=5
 
     current_code="$(proxy_main_menu_view_code_fingerprint 2>/dev/null || true)"
-    cached_code="$(cat "$code_file" 2>/dev/null | tr -d '[:space:]')"
+    cached_code="$(< "$code_file" 2>/dev/null)" || cached_code=""
+    cached_code="${cached_code//[[:space:]]/}"
     [[ -n "$current_code" && -n "$cached_code" && "$current_code" == "$cached_code" ]] || return 1
 
     if (( ttl == 0 )); then
         return 0
     fi
 
-    now="$(date +%s 2>/dev/null || echo 0)"
+    printf -v now '%(%s)T' -1 2>/dev/null || now="$(date +%s 2>/dev/null || echo 0)"
     ts="$(proxy_file_mtime_epoch "$cache_file" 2>/dev/null || echo 0)"
     [[ "$now" =~ ^[0-9]+$ && "$ts" =~ ^[0-9]+$ ]] || return 1
     age=$((now - ts))
@@ -379,11 +381,20 @@ proxy_main_menu_view_cache_rebuild() {
 proxy_fingerprint_sweep() {
     local conf_file="${1:-}"
     [[ -n "$conf_file" && -f "$conf_file" ]] || return 0
+    # Clear stat cache so mutations since last sweep are visible.
+    _PROXY_STAT_CACHE=()
     ensure_file_fp_cache_maps
     calc_file_meta_signature "$conf_file" >/dev/null 2>&1 || true
     [[ -f "$USER_META_DB_FILE" ]] && calc_file_meta_signature "$USER_META_DB_FILE" >/dev/null 2>&1 || true
     [[ -f "$USER_TEMPLATE_DB_FILE" ]] && calc_file_meta_signature "$USER_TEMPLATE_DB_FILE" >/dev/null 2>&1 || true
     [[ -f "$SNELL_CONF" ]] && calc_file_meta_signature "$SNELL_CONF" >/dev/null 2>&1 || true
+    # Pre-populate stat cache for code fingerprint files (avoids re-stat in subshell).
+    calc_file_meta_signature "${BASH_SOURCE[0]}" >/dev/null 2>&1 || true
+    calc_file_meta_signature "${SCRIPT_DIR}/env.sh" >/dev/null 2>&1 || true
+    local _rel=""
+    while IFS= read -r _rel; do
+        [[ -n "$_rel" ]] && calc_file_meta_signature "${MODULE_ROOT}/${_rel}" >/dev/null 2>&1 || true
+    done < <(proxy_base_module_rel_paths)
 }
 
 proxy_main_menu_print() {

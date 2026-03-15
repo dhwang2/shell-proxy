@@ -1,12 +1,12 @@
 # Runtime log, dashboard, and lightweight status helpers for shell-proxy management.
 
-RUNTIME_STATUS_COMMON_OPS_FILE="${RUNTIME_STATUS_COMMON_OPS_FILE:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../core/common_ops.sh}"
+RUNTIME_STATUS_COMMON_OPS_FILE="${RUNTIME_STATUS_COMMON_OPS_FILE:-$(cd "${BASH_SOURCE[0]%/*}" && pwd)/../core/common_ops.sh}"
 if [[ -f "$RUNTIME_STATUS_COMMON_OPS_FILE" ]]; then
     # shellcheck disable=SC1090
     source "$RUNTIME_STATUS_COMMON_OPS_FILE"
 fi
 
-RUNTIME_STATUS_RELEASE_OPS_FILE="${RUNTIME_STATUS_RELEASE_OPS_FILE:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../core/release_ops.sh}"
+RUNTIME_STATUS_RELEASE_OPS_FILE="${RUNTIME_STATUS_RELEASE_OPS_FILE:-$(cd "${BASH_SOURCE[0]%/*}" && pwd)/../core/release_ops.sh}"
 if [[ -f "$RUNTIME_STATUS_RELEASE_OPS_FILE" ]]; then
     # shellcheck disable=SC1090
     source "$RUNTIME_STATUS_RELEASE_OPS_FILE"
@@ -30,15 +30,17 @@ DASHBOARD_CACHE_RULES=""
 DASHBOARD_CACHE_VERSION=""
 
 ensure_runtime_log_files() {
+    [[ "${_PROXY_LOG_FILES_ENSURED:-0}" == "1" ]] && return 0
     mkdir -p "$LOG_DIR" >/dev/null 2>&1 || true
     touch "$PROXY_SCRIPT_LOG" "$PROXY_WATCHDOG_LOG" >/dev/null 2>&1 || true
+    _PROXY_LOG_FILES_ENSURED=1
     cleanup_runtime_logs || true
 }
 
 cleanup_runtime_logs() {
     local now_ts last_ts
-    now_ts="$(date +%s 2>/dev/null || echo 0)"
-    last_ts="$(cat "$RUNTIME_LOG_CLEAN_TS_FILE" 2>/dev/null || echo 0)"
+    printf -v now_ts '%(%s)T' -1 2>/dev/null || now_ts="$(date +%s 2>/dev/null || echo 0)"
+    last_ts="$(< "$RUNTIME_LOG_CLEAN_TS_FILE" 2>/dev/null)" || last_ts=0
     [[ "$now_ts" =~ ^[0-9]+$ ]] || now_ts=0
     [[ "$last_ts" =~ ^[0-9]+$ ]] || last_ts=0
 
@@ -93,7 +95,9 @@ proxy_log() {
 
     ensure_runtime_log_files
     rotate_script_log_if_needed
-    printf '[%s] [%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$level" "$message" >>"$PROXY_SCRIPT_LOG" 2>/dev/null || true
+    local _ts=""
+    printf -v _ts '%(%Y-%m-%d %H:%M:%S)T' -1 2>/dev/null || _ts="$(date '+%Y-%m-%d %H:%M:%S')"
+    printf '[%s] [%s] %s\n' "$_ts" "$level" "$message" >>"$PROXY_SCRIPT_LOG" 2>/dev/null || true
 }
 
 get_os_id() {
@@ -450,11 +454,14 @@ PROXY_SERVICE_STATE_CACHE_TS=0
 PROXY_SERVICE_STATE_CACHE_TTL="${PROXY_SERVICE_STATE_CACHE_TTL:-3}"
 
 proxy_refresh_service_state_cache() {
-    PROXY_SERVICE_STATE_CACHE_SINGBOX="$(systemctl is-active sing-box 2>/dev/null || true)"
-    PROXY_SERVICE_STATE_CACHE_SNELL="$(systemctl is-active snell-v5 2>/dev/null || true)"
+    # Single systemctl call for both services (1 fork instead of 2).
+    local _states=""
+    _states="$(systemctl is-active sing-box snell-v5 2>/dev/null || true)"
+    PROXY_SERVICE_STATE_CACHE_SINGBOX="${_states%%$'\n'*}"
+    PROXY_SERVICE_STATE_CACHE_SNELL="${_states#*$'\n'}"
     [[ -z "$PROXY_SERVICE_STATE_CACHE_SINGBOX" ]] && PROXY_SERVICE_STATE_CACHE_SINGBOX="inactive"
     [[ -z "$PROXY_SERVICE_STATE_CACHE_SNELL" ]] && PROXY_SERVICE_STATE_CACHE_SNELL="inactive"
-    PROXY_SERVICE_STATE_CACHE_TS="$(date +%s 2>/dev/null || echo 0)"
+    printf -v PROXY_SERVICE_STATE_CACHE_TS '%(%s)T' -1 2>/dev/null || PROXY_SERVICE_STATE_CACHE_TS="$(date +%s 2>/dev/null || echo 0)"
 }
 
 proxy_invalidate_service_state_cache() {
@@ -463,7 +470,7 @@ proxy_invalidate_service_state_cache() {
 
 proxy_ensure_service_state_cache() {
     local now_ts=0
-    now_ts="$(date +%s 2>/dev/null || echo 0)"
+    printf -v now_ts '%(%s)T' -1 2>/dev/null || now_ts="$(date +%s 2>/dev/null || echo 0)"
     [[ "$now_ts" =~ ^[0-9]+$ ]] || now_ts=0
     if [[ -n "$PROXY_SERVICE_STATE_CACHE_SINGBOX" && "$PROXY_SERVICE_STATE_CACHE_TS" =~ ^[0-9]+$ ]] \
         && (( now_ts > 0 && PROXY_SERVICE_STATE_CACHE_TS > 0 && (now_ts - PROXY_SERVICE_STATE_CACHE_TS) < PROXY_SERVICE_STATE_CACHE_TTL )); then
@@ -509,7 +516,7 @@ dashboard_static_stack_bucket() {
     interval="${RUNTIME_DASHBOARD_STACK_BUCKET_SECONDS:-300}"
     [[ "$interval" =~ ^[0-9]+$ ]] || interval=300
     (( interval > 0 )) || interval=300
-    now_ts="$(date +%s 2>/dev/null || echo 0)"
+    printf -v now_ts '%(%s)T' -1 2>/dev/null || now_ts="$(date +%s 2>/dev/null || echo 0)"
     [[ "$now_ts" =~ ^[0-9]+$ ]] || now_ts=0
     echo $((now_ts / interval))
 }

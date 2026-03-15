@@ -311,6 +311,12 @@ calc_file_meta_signature() {
     local file="${1:-}" meta_sig=""
     [[ -n "$file" && -f "$file" ]] || return 1
 
+    # In-memory cache: return cached result if file path was seen before.
+    if [[ -n "${_PROXY_STAT_CACHE[$file]+x}" ]]; then
+        printf '%s\n' "${_PROXY_STAT_CACHE[$file]}"
+        return 0
+    fi
+
     if [[ -z "${PROXY_STAT_FORMAT_STYLE:-}" ]]; then
         if stat -Lc '%s:%Y:%i' "$file" >/dev/null 2>&1; then
             PROXY_STAT_FORMAT_STYLE="gnu"
@@ -333,14 +339,17 @@ calc_file_meta_signature() {
             ;;
     esac
     [[ -n "$meta_sig" ]] || return 1
+    _PROXY_STAT_CACHE["$file"]="$meta_sig"
     printf '%s\n' "$meta_sig"
 }
+declare -gA _PROXY_STAT_CACHE=()
 
 ensure_file_fp_cache_maps() {
-    if ! declare -p PROXY_FILE_FP_META 2>/dev/null | grep -q 'declare -A'; then
+    [[ "${PROXY_FILE_FP_CACHE_INIT:-0}" == "1" ]] && return 0
+    if ! declare -p PROXY_FILE_FP_META &>/dev/null; then
         declare -gA PROXY_FILE_FP_META=()
     fi
-    if ! declare -p PROXY_FILE_FP_VALUE 2>/dev/null | grep -q 'declare -A'; then
+    if ! declare -p PROXY_FILE_FP_VALUE &>/dev/null; then
         declare -gA PROXY_FILE_FP_VALUE=()
     fi
     PROXY_FILE_FP_CACHE_INIT=1
