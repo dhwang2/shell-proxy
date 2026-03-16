@@ -27,25 +27,23 @@ sudo bash /etc/shell-proxy/self_update.sh repo
 ## Directory Structure
 
 ```text
-shell-proxy/
-├── app/                      ← Application source code
-│   ├── bootstrap.sh          ← Installation entry point
-│   ├── env.sh                ← Module manifest and managed file definitions
-│   ├── install.sh
-│   ├── management.sh
-│   ├── self_update.sh
-│   ├── watchdog.sh
-│   ├── systemd/              ← Service templates
-│   └── modules/              ← Modules grouped by domain
-│       ├── core/
-│       ├── protocol/
-│       ├── routing/
-│       ├── subscription/
-│       ├── user/
-│       ├── network/
-│       ├── runtime/
-│       └── service/
-└── docs/                     ← Documentation
+app/
+├── bootstrap.sh          ← Installation entry point
+├── env.sh                ← Module manifest and managed file definitions
+├── install.sh
+├── management.sh
+├── self_update.sh
+├── watchdog.sh
+├── systemd/              ← Service templates
+└── modules/              ← Modules grouped by domain
+    ├── core/
+    ├── protocol/
+    ├── routing/
+    ├── subscription/
+    ├── user/
+    ├── network/
+    ├── runtime/
+    └── service/
 ```
 
 ## Runtime
@@ -53,4 +51,8 @@ shell-proxy/
 - Root directory: `/etc/shell-proxy`
 - Module manifest: `app/env.sh`
 - Supported protocols: VLESS, TUIC, Trojan, AnyTLS, Shadowsocks 2022, Snell v5 + ShadowTLS v3
+
+## License
+
+[MIT](LICENSE)
 
