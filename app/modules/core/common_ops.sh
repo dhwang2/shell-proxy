@@ -164,7 +164,7 @@ _PROXY_SPIN_FRAMES=(
     '░█▓▒░░░░░░'
 )
 _PROXY_SPIN_COLOR='\033[38;2;215;119;87m'
-_PROXY_SPIN_INTERVAL=0.6
+_PROXY_SPIN_INTERVAL=0.4
 
 if ! declare -F proxy_run_with_spinner >/dev/null 2>&1; then
 proxy_run_with_spinner() {

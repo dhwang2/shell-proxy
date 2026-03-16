@@ -211,7 +211,7 @@ main() {
     source_record="${source_info[2]:-}"
     base_url="${source_info[3]:-}"
     if [[ "$SELF_UPDATE_MODE" == "repo" && -n "$resolved_ref" ]]; then
-        target_label="仓库最新提交记录(${resolved_ref:0:8})"
+        target_label="(${resolved_ref:0:8})"
     fi
     ensure_self_update_release_helpers
     current_ref="$(read_script_source_ref 2>/dev/null || true)"
@@ -225,24 +225,23 @@ main() {
             local current_short=""
             current_short="$(short_script_source_display "$current_ref" 2>/dev/null || true)"
             if [[ -n "$current_short" ]]; then
-                display_source_label="${repo_name}@${BRANCH}(${current_short})"
+                display_source_label="(${current_short})"
             fi
         fi
-        yellow "源: ${display_source_label} -> 目标: ${target_label}"
+        yellow "shell-proxy:${display_source_label} -> ${target_label}"
     fi
     if script_source_matches_target "$current_ref" "$source_record" "$SELF_UPDATE_MODE" "$resolved_ref"; then
         green "已是最新版本"
         return 0
     fi
 
-    if [[ "$SELF_UPDATE_CHAINLOADED" != "1" && -n "$source_record" && -n "$current_ref" ]]; then
-        yellow "发现可更新版本"
+    if [[ “$SELF_UPDATE_CHAINLOADED” != “1” && -n “$source_record” && -n “$current_ref” ]]; then
         if [[ ! -t 0 ]]; then
-            red "当前调用不是交互式终端，无法确认脚本更新。请通过 proxy 菜单（shell-proxy）执行“脚本更新”并手动确认。"
+            red “当前调用不是交互式终端，无法确认脚本更新。请通过 proxy 菜单（shell-proxy）执行”脚本更新”并手动确认。”
             return 11
         fi
-        local yn=""
-        read -r -p "确认更新? [y/N]: " yn
+        local yn=””
+        read -r -p “发现可更新版本,是否更新? [y/N]: “ yn
         [[ "${yn,,}" == "y" ]] || return 0
         preconfirmed_update=1
     fi
@@ -456,8 +455,7 @@ main() {
         [[ "${yn,,}" == "y" ]] || return 0
     fi
 
-    yellow "发现脚本更新,正在更新 ${dl_count}/${total_managed} 个文件"
-    yellow "变更文件(${#changed_files[@]}): "
+    yellow "正在更新 ${dl_count}/${total_managed} 个文件"
     format_changed_files_block "${changed_files[@]}"
 
     mkdir -p "${WORK_DIR}/modules" "${WORK_DIR}/systemd"
