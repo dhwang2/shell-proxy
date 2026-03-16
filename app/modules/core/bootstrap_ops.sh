@@ -183,7 +183,6 @@ config_apply_async() {
         config_apply_async_worker "$conf_file" "$status_file" "$lock_file"
     ) >/dev/null 2>&1 &
 
-    green "⟳ 配置生效中..."
 }
 
 proxy_check_pending_apply_status() {
