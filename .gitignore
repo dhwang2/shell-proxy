@@ -1,9 +1,2 @@
 # OS
 **/.DS_Store
-
-# Editor
-.idea/
-.vscode/
-
-# Local-only
-/docs/

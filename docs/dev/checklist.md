@@ -297,3 +297,15 @@
   - [x] Phase 4: Merged multi-field extractions — `ensure_singbox_auto_config` dual-read into single `@tsv` jq.
   - [x] Code review fixes: re-added grep fast-path for existing groups, added backslash escaping to snell JSON, replaced `head -c 1` with `read -r -n 1`, inlined dead `routing_sync_dns_context_fields`, renamed `context_json` to `context_delimited`.
   - [x] Re-validated with `bash -n` on all 12 modified files.
+
+- [x] **u-2-120 perf: profile-guided startup fork reduction (2026-03-16)**
+  - [x] Profiled `proxy menu` on gcp-oregon via `PS4+EPOCHREALTIME` tracing (309ms baseline, 1105 trace lines).
+  - [x] Added `_PROXY_STAT_CACHE` in-memory associative array to `calc_file_meta_signature` (stat forks 15→9).
+  - [x] Batched 2 `systemctl is-active` into 1 call (21ms→10ms); replaced all 8 `date` forks with `printf '%(%s)T'` builtin.
+  - [x] Added re-entry guards for `ensure_runtime_log_files` and `ensure_file_fp_cache_maps`; replaced `dirname`/`basename` with parameter expansion.
+  - [x] Result: main menu render 309ms→243ms (-21%) on e2-micro.
+  - [x] Re-validated with `bash -n`; deployed and verified on `gcp-oregon`.
+
+- [x] **u-2-120a ux: breathing dot loading animation (2026-03-16)**
+  - [x] Replaced braille spinner with pulsing `●` using 256-color grayscale brightness cycling (240→255→240) at 120ms interval across all 4 spinner sites.
+  - [x] Re-validated with `bash -n`.

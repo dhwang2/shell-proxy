@@ -975,3 +975,31 @@ Measured 6-protocol real-menu install for user `u193x1` -- before fix: `proto_5(
 - **Verification**:
   - `bash -n` passed on all 12 modified files.
   - Pure internal logic changes with zero UI impact; all mutations produce identical output.
+
+##### u-2-120 perf: profile-guided startup fork reduction (2026-03-16)
+> **Target**: Identify and eliminate startup fork overhead on gcp-oregon e2-micro via runtime profiling.
+
+- **Changes**:
+  1. Profiled `proxy menu` with `PS4+EPOCHREALTIME` tracing — 309ms baseline, top hotspots: `stat` forks (55.9ms/28 calls), `systemctl` (21.8ms/2 calls), `date` forks (16.6ms/8 calls).
+  2. Added `_PROXY_STAT_CACHE` associative array to `calc_file_meta_signature()` — avoids re-forking `stat` for previously seen files; cleared on `proxy_fingerprint_sweep` entry for mutation visibility.
+  3. Batched `systemctl is-active sing-box snell-v5` into single call in `proxy_refresh_service_state_cache()`.
+  4. Replaced all `date +%s` and `date '+%Y-%m-%d %H:%M:%S'` with `printf -v '%(%s)T'` / `printf -v '%(%Y-%m-%d %H:%M:%S)T'` builtins (8→0 forks).
+  5. Added `_PROXY_LOG_FILES_ENSURED` re-entry guard to `ensure_runtime_log_files()`; early-return guard in `ensure_file_fp_cache_maps()`.
+  6. Replaced `dirname`/`basename` with `${var%/*}`/`${var##*/}` in `proxy_source_guard_key()` and `runtime_status_ops.sh` header.
+  7. `proxy_main_menu_view_code_fingerprint()` reads `_PROXY_STAT_CACHE` directly to avoid losing cache in subshell; `proxy_fingerprint_sweep()` pre-populates cache for code fingerprint files.
+  8. Replaced `cat "$file" | tr -d` pipe with `< "$file"` redirect + parameter expansion in `proxy_main_menu_view_cache_is_fresh()`.
+
+- **Verification**:
+  - `bash -n` passed on all 3 modified files.
+  - Re-profiled on `gcp-oregon`: 309ms → 243ms (-21%), stat 15→9, date 8→0, systemctl 2→1.
+
+##### u-2-120a ux: breathing dot loading animation (2026-03-16)
+> **Target**: Replace braille rotation spinner with Claude Code-style breathing animation.
+
+- **Changes**:
+  1. Replaced `('⠋' '⠙' '⠹' ...)` frames with `●` dot using 256-color grayscale pulse (colors 240→255→240, 10 brightness levels).
+  2. Slowed frame interval from 80ms to 120ms for breathing feel.
+  3. Applied to all 4 spinner sites: `proxy_run_with_spinner`, `_compact`, `_fg`, and TLS cert wait.
+
+- **Verification**:
+  - `bash -n` passed on both modified files.
