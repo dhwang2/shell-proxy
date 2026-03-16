@@ -419,7 +419,7 @@ update_self() {
     if (( rc == 10 )); then
         if [[ -t 0 && -t 1 && -f "$management_script" ]]; then
             if declare -F proxy_run_with_spinner_compact >/dev/null 2>&1; then
-                proxy_run_with_spinner_compact "正在启用新脚本..." sleep 0.2
+                proxy_run_with_spinner_compact "正在加载新脚本..." sleep 0.5
             fi
             green "脚本更新已生效，正在切换到新菜单..."
             exec bash "$management_script" menu
