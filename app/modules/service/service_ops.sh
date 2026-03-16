@@ -206,8 +206,6 @@ uninstall_service() {
     read -p "确认彻底卸载? [y/N]: " confirm
     [[ "${confirm,,}" != "y" ]] && return
 
-    echo
-    green "正在停止服务..."
     systemctl stop sing-box snell-v5 caddy-sub proxy-watchdog 2>/dev/null
     systemctl disable sing-box snell-v5 caddy-sub proxy-watchdog 2>/dev/null
     shadowtls_operate_all "stop" || true
@@ -217,15 +215,12 @@ uninstall_service() {
         systemctl disable "$st_service" 2>/dev/null || true
     done < <(shadowtls_service_names)
 
-    green "正在删除服务文件..."
     rm -f "$SERVICE_FILE" "$SNELL_SERVICE_FILE" "$ST_SERVICE_FILE" "$CADDY_SERVICE_FILE" "$WATCHDOG_SERVICE_FILE"
     rm -f /etc/systemd/system/shadow-tls-*.service 2>/dev/null || true
     systemctl daemon-reload
 
-    green "正在清理缓存..."
     proxy_cache_purge_all
 
-    green "正在清理文件..."
     rm -f /usr/bin/proxy
     rm -rf "$WORK_DIR"
     rm -rf "$TEMP_DIR"
