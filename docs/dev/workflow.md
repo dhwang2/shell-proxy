@@ -1003,3 +1003,36 @@ Measured 6-protocol real-menu install for user `u193x1` -- before fix: `proto_5(
 
 - **Verification**:
   - `bash -n` passed on both modified files.
+
+##### u-2-121 bugfix: test split view missing newline and redundant title (2026-03-16)
+> **Target**: Fix test split effect view where last line merged with bottom border and title appeared twice.
+
+- **Changes**:
+  1. `proxy_cache_write_atomic()` in `bootstrap_ops.sh`: changed `printf '%s'` to `printf '%s\n'` — command substitution strips trailing newlines, so cached text files lost their final `\n`, causing `cat` output to merge with subsequent output.
+  2. Removed redundant `yellow "测试分流效果（结果仅作快速自检）"` and its `proxy_menu_divider` from both `routing_render_test_effect_uncached()` and `routing_render_test_effect_pending_view()` — the page header via `proxy_menu_header` already provides the title.
+
+- **Verification**:
+  - `bash -n` passed on all 3 modified files.
+  - Deployed to `gcp-oregon`, rebuilt bundles, verified test split view renders correctly.
+
+##### u-2-122 ux: Claude Code braille spinner (2026-03-16)
+> **Target**: Replace spinner animation with Claude Code's exact spinner style.
+
+- **Changes**:
+  1. Extracted spinner definition from Claude Code binary: braille frames `⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏` at 80ms interval, color `rgb(215,119,87)` (Claude terracotta).
+  2. Replaced all spinner implementations in `common_ops.sh` (3 variants) and `protocol_tls_ops.sh` (TLS cert wait).
+
+- **Verification**:
+  - `bash -n` passed on both modified files.
+  - Deployed to `gcp-oregon`, rebuilt bundles.
+
+##### u-2-123 refactor: DRY spinner constants and fork-free sleep (2026-03-16)
+> **Target**: Eliminate spinner duplication and reduce fork overhead in animation loops.
+
+- **Changes**:
+  1. Extracted `_PROXY_SPIN_FRAMES` array and `_PROXY_SPIN_COLOR` escape constant as globals in `common_ops.sh`; all 4 spinner sites now reference shared constants instead of local copies.
+  2. Fixed 3 printf format strings where `${_PROXY_SPIN_COLOR}` was trapped inside single quotes — applied quote-breaking: `'"${_PROXY_SPIN_COLOR}"'`.
+  3. Replaced `sleep 0.08` with `read -t 0.08 -n 0 </dev/null` in 3 spinner loops — eliminates ~12.5 fork+exec of `/bin/sleep` per second during animation.
+
+- **Verification**:
+  - `bash -n` passed on `common_ops.sh` and `protocol_tls_ops.sh`.

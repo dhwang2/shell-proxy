@@ -309,3 +309,19 @@
 - [x] **u-2-120a ux: breathing dot loading animation (2026-03-16)**
   - [x] Replaced braille spinner with pulsing `●` using 256-color grayscale brightness cycling (240→255→240) at 120ms interval across all 4 spinner sites.
   - [x] Re-validated with `bash -n`.
+
+- [x] **u-2-121 bugfix: test split view missing newline and redundant title (2026-03-16)**
+  - [x] Fixed `proxy_cache_write_atomic` `printf '%s'` → `'%s\n'` to restore trailing newline stripped by command substitution.
+  - [x] Removed redundant `测试分流效果（结果仅作快速自检）` title from `routing_render_test_effect_uncached` and pending view (already in `proxy_menu_header`).
+  - [x] Re-validated with `bash -n`; deployed and verified on `gcp-oregon`.
+
+- [x] **u-2-122 ux: Claude Code braille spinner (2026-03-16)**
+  - [x] Replaced all spinner animations with Claude Code's exact spinner: braille dots `⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏` in `rgb(215,119,87)` at 80ms (extracted from Claude Code binary).
+  - [x] Applied to all 4 spinner sites: `proxy_run_with_spinner`, `_compact`, `_fg`, and TLS cert wait.
+  - [x] Re-validated with `bash -n`; deployed and verified on `gcp-oregon`.
+
+- [x] **u-2-123 refactor: DRY spinner constants and fork-free sleep (2026-03-16)**
+  - [x] Extracted `_PROXY_SPIN_FRAMES` and `_PROXY_SPIN_COLOR` globals in `common_ops.sh`; replaced 4 local array copies across 2 files.
+  - [x] Fixed 3 printf lines where `${_PROXY_SPIN_COLOR}` was inside single quotes (variable won't expand); applied quote-breaking pattern.
+  - [x] Replaced `sleep 0.08` with `read -t 0.08` builtin in 3 spinner loops to eliminate ~12.5 fork+exec/sec.
+  - [x] Re-validated with `bash -n` on both modified files.

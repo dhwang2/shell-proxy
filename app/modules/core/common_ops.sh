@@ -147,6 +147,9 @@ read_prompt() {
 }
 fi
 
+_PROXY_SPIN_FRAMES=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+_PROXY_SPIN_COLOR='\033[38;2;215;119;87m'
+
 if ! declare -F proxy_run_with_spinner >/dev/null 2>&1; then
 proxy_run_with_spinner() {
     local message="${1:-处理中...}" tmp_out="" tmp_err="" pid="" rc=0 spin_idx=0
@@ -166,13 +169,13 @@ proxy_run_with_spinner() {
         return $?
     fi
 
-    local -a _breath=( '\033[38;5;240m' '\033[38;5;243m' '\033[38;5;246m' '\033[38;5;249m' '\033[38;5;252m' '\033[38;5;255m' '\033[38;5;252m' '\033[38;5;249m' '\033[38;5;246m' '\033[38;5;243m' )
+    local -a _spin=("${_PROXY_SPIN_FRAMES[@]}")
     "$@" >"$tmp_out" 2>"$tmp_err" &
     pid=$!
     while kill -0 "$pid" 2>/dev/null; do
-        printf '\r\033[K  %b●\033[0m %s' "${_breath[$spin_idx]}" "$message" > /dev/tty
-        spin_idx=$(( (spin_idx + 1) % ${#_breath[@]} ))
-        sleep 0.12
+        printf '\r\033[K  '"${_PROXY_SPIN_COLOR}"'%s\033[0m %s' "${_spin[$spin_idx]}" "$message" > /dev/tty
+        spin_idx=$(( (spin_idx + 1) % ${#_spin[@]} ))
+        read -t 0.08 -n 0 </dev/null 2>/dev/null || true
     done
     wait "$pid" || rc=$?
     printf '\r\033[K' > /dev/tty
@@ -202,13 +205,13 @@ proxy_run_with_spinner_compact() {
         return $?
     fi
 
-    local -a _breath=( '\033[38;5;240m' '\033[38;5;243m' '\033[38;5;246m' '\033[38;5;249m' '\033[38;5;252m' '\033[38;5;255m' '\033[38;5;252m' '\033[38;5;249m' '\033[38;5;246m' '\033[38;5;243m' )
+    local -a _spin=("${_PROXY_SPIN_FRAMES[@]}")
     "$@" >"$tmp_out" 2>"$tmp_err" &
     pid=$!
     while kill -0 "$pid" 2>/dev/null; do
-        printf '\r\033[K%b●\033[0m %s' "${_breath[$spin_idx]}" "$message" > /dev/tty
-        spin_idx=$(( (spin_idx + 1) % ${#_breath[@]} ))
-        sleep 0.12
+        printf '\r\033[K'"${_PROXY_SPIN_COLOR}"'%s\033[0m %s' "${_spin[$spin_idx]}" "$message" > /dev/tty
+        spin_idx=$(( (spin_idx + 1) % ${#_spin[@]} ))
+        read -t 0.08 -n 0 </dev/null 2>/dev/null || true
     done
     wait "$pid" || rc=$?
     printf '\r\033[K' > /dev/tty
@@ -230,13 +233,13 @@ proxy_run_with_spinner_fg() {
         return $?
     fi
 
-    local -a _breath=( '\033[38;5;240m' '\033[38;5;243m' '\033[38;5;246m' '\033[38;5;249m' '\033[38;5;252m' '\033[38;5;255m' '\033[38;5;252m' '\033[38;5;249m' '\033[38;5;246m' '\033[38;5;243m' )
+    local -a _spin=("${_PROXY_SPIN_FRAMES[@]}")
     (
         local spin_idx=0
         while true; do
-            printf '\r\033[K%b●\033[0m %s' "${_breath[$spin_idx]}" "$message" > /dev/tty
-            spin_idx=$(( (spin_idx + 1) % ${#_breath[@]} ))
-            sleep 0.12
+            printf '\r\033[K'"${_PROXY_SPIN_COLOR}"'%s\033[0m %s' "${_spin[$spin_idx]}" "$message" > /dev/tty
+            spin_idx=$(( (spin_idx + 1) % ${#_spin[@]} ))
+            read -t 0.08 -n 0 </dev/null 2>/dev/null || true
         done
     ) &
     spinner_pid=$!

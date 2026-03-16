@@ -104,8 +104,6 @@ routing_render_test_effect_uncached() {
         echo "用户: ${ROUTING_USER_CONTEXT_NAME}"
         proxy_menu_divider
     fi
-    yellow "测试分流效果（结果仅作快速自检）"
-    proxy_menu_divider
     now_label="$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || true)"
     [[ -n "$now_label" ]] && echo "探测时间: ${now_label}"
 
@@ -270,8 +268,6 @@ routing_render_test_effect_pending_view() {
         echo "用户: ${ROUTING_USER_CONTEXT_NAME}"
         proxy_menu_divider
     fi
-    yellow "测试分流效果（结果仅作快速自检）"
-    proxy_menu_divider
     echo "状态: 暂无可用探测缓存，已启动后台刷新"
     echo "提示: 稍后重新进入本页面查看最新出口 IP"
     proxy_menu_divider
