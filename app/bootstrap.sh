@@ -97,7 +97,6 @@ extract_install_tree() {
     return 0
 }
 
-echo "正在准备安装源:${REPO_USER}/${REPO_NAME}@${BRANCH}"
 REPO_REF="$(resolve_repo_ref)"
 if [[ -n "$REPO_REF" ]]; then
     green "正在准备安装源:${REPO_USER}/${REPO_NAME}@${BRANCH} (${REPO_REF:0:12})"
