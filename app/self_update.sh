@@ -235,13 +235,13 @@ main() {
         return 0
     fi
 
-    if [[ “$SELF_UPDATE_CHAINLOADED” != “1” && -n “$source_record” && -n “$current_ref” ]]; then
+    if [[ "$SELF_UPDATE_CHAINLOADED" != "1" && -n "$source_record" && -n "$current_ref" ]]; then
         if [[ ! -t 0 ]]; then
-            red “当前调用不是交互式终端，无法确认脚本更新。请通过 proxy 菜单（shell-proxy）执行”脚本更新”并手动确认。”
+            red "当前调用不是交互式终端，无法确认脚本更新。请通过 proxy 菜单（shell-proxy）执行"脚本更新"并手动确认。"
             return 11
         fi
-        local yn=””
-        read -r -p “发现可更新版本,是否更新? [y/N]: “ yn
+        local yn=""
+        read -r -p "发现可更新版本,是否更新? [y/N]: " yn
         [[ "${yn,,}" == "y" ]] || return 0
         preconfirmed_update=1
     fi
@@ -446,7 +446,7 @@ main() {
     fi
 
     if (( preconfirmed_update == 0 )) && [[ ! -t 0 ]]; then
-        red "当前调用不是交互式终端，无法确认脚本更新。请通过 proxy 菜单（shell-proxy）执行“脚本更新”并手动确认。"
+        red "当前调用不是交互式终端，无法确认脚本更新。请通过 proxy 菜单（shell-proxy）执行"脚本更新"并手动确认。"
         return 11
     fi
     if (( preconfirmed_update == 0 )); then
