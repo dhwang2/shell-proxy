@@ -364,10 +364,6 @@ ensure_singbox_auto_config() {
     fi
     normalize_singbox_top_level_key_order "$target_conf" >/dev/null 2>&1 || true
 
-    if [[ -t 1 ]]; then
-        green "已自动生成 sing-box 配置: ${target_conf}"
-        yellow "网络栈识别: ${stack_mode}"
-    fi
     singbox_autoconfig_state_mark_fresh "$target_conf" || true
     return 0
 }
