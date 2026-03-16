@@ -289,7 +289,7 @@ proxy_cache_write_atomic() {
     [[ -n "$path" ]] || return 1
     mkdir -p "$(dirname "$path")" >/dev/null 2>&1 || return 1
     tmp_file="$(mktemp)"
-    printf '%s' "$content" >"$tmp_file"
+    printf '%s\n' "$content" >"$tmp_file"
     mv -f "$tmp_file" "$path"
 }
 

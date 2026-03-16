@@ -391,6 +391,7 @@ manage_routing_menu() {
                     routing_with_user_context "$target_name" ui_clear
                     routing_with_user_context "$target_name" proxy_menu_header "测试分流效果"
                     routing_with_user_context "$target_name" test_routing_effect "$conf_file"
+                    proxy_menu_rule "═"
                 } >"$render_file"
                 routing_print_rendered_file "$render_file"
                 ;;
