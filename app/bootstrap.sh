@@ -97,16 +97,16 @@ extract_install_tree() {
     return 0
 }
 
-echo "正在准备安装源..."
+echo "正在准备安装源:${REPO_USER}/${REPO_NAME}@${BRANCH}"
 REPO_REF="$(resolve_repo_ref)"
 if [[ -n "$REPO_REF" ]]; then
-    green "使用安装源: ${REPO_USER}/${REPO_NAME}@${BRANCH} (${REPO_REF:0:12})"
+    green "正在准备安装源:${REPO_USER}/${REPO_NAME}@${BRANCH} (${REPO_REF:0:12})"
 else
     red "解析仓库提交失败: ${REPO_USER}/${REPO_NAME}@${BRANCH}"
     exit 1
 fi
 
-green "正在拉取安装归档..."
+green "正在拉取安装归档和依赖..."
 download_repo_archive "$REPO_REF" "$ARCHIVE_FILE" || exit 1
 extract_install_tree "$ARCHIVE_FILE" "$INSTALL_DIR" || {
     red "解压安装包失败"
@@ -114,8 +114,6 @@ extract_install_tree "$ARCHIVE_FILE" "$INSTALL_DIR" || {
 }
 
 chmod +x "$INSTALL_SRC_DIR/install.sh"
-
-green "引导完成，开始执行安装..."
 cd "$INSTALL_SRC_DIR"
 if ! PROXY_INSTALL_BOOTSTRAP_REF="${REPO_REF}" PROXY_INSTALL_BOOTSTRAP_SOURCE_DIR="$INSTALL_SRC_DIR" bash install.sh; then
     red "安装失败，请根据上方日志排查。"

@@ -67,7 +67,6 @@ check_sys() {
 }
 
 install_dependencies() {
-    green "正在安装依赖..."
     if [[ "${release}" == "centos" ]]; then
         yum install -y tar jq curl unzip ca-certificates
     else
@@ -187,7 +186,7 @@ install_caddy() {
         rm -f "$archive_path"
         chmod +x "$CADDY_BIN"
         if "$CADDY_BIN" version >/dev/null 2>&1; then
-            green "caddy 安装成功: $("$CADDY_BIN" version | awk '{print $1}')"
+            true
         else
             red "caddy 安装失败"
             return 1
@@ -199,7 +198,6 @@ install_caddy() {
 }
 
 create_services() {
-    green "配置 Systemd 服务..."
     mkdir -p "$LOG_DIR" "$WORK_DIR/caddy"
     touch \
         "$SINGBOX_SERVICE_LOG" \
@@ -225,14 +223,13 @@ create_services() {
 }
 
 install_control_script() {
-    green "安装管理脚本..."
     mkdir -p "$WORK_DIR" "${WORK_DIR}/modules" "${WORK_DIR}/systemd"
     local repo_ref="" repo_name="${REPO_USER}/${REPO_NAME}"
     local rel_path="" dest_path="" install_src_dir="" source_path="" source_real="" dest_real=""
     repo_ref="${PROXY_INSTALL_BOOTSTRAP_REF:-}"
     install_src_dir="${PROXY_INSTALL_BOOTSTRAP_SOURCE_DIR:-}"
     if [[ -n "$repo_ref" && -n "$install_src_dir" && -d "$install_src_dir" && -f "$install_src_dir/env.sh" ]]; then
-        green "复用引导层安装源: ${repo_name}@${BRANCH} (${repo_ref:0:12})"
+        true
     else
         install_src_dir="$(dirname "$0")"
         repo_ref=""
@@ -284,7 +281,7 @@ main() {
     if [[ -t 0 && -t 1 ]]; then
         proxy menu
     else
-        yellow "检测到非交互终端，已跳过菜单。可手动执行: proxy menu（shell-proxy）"
+        yellow "检测到非交互终端，已跳过菜单。快捷指令(shell-proxy): proxy"
     fi
 }
 
