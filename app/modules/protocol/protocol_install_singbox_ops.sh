@@ -304,7 +304,7 @@ modify_singbox_inbounds_logic() {
             else
                 protocol_install_apply_singbox_change
             fi
-            green “协议安装成功”
+            green "✓ 协议安装成功!"
             return 0
         }
 

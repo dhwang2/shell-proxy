@@ -504,7 +504,7 @@ wait_for_tls_certificate_file() {
             green "✅ 证书申请成功 (耗时 ${elapsed}s)" >&2
             return 0
         fi
-        printf '\r\033[K  '"${_PROXY_SPIN_COLOR}"'%s\033[0m 等待证书签发... %ds/%ds' "${_spin[$spin_idx]}" "$elapsed" "$timeout" >&2
+        printf '\r\033[K'"${_PROXY_SPIN_COLOR}"'%s\033[0m 等待证书签发... %ds/%ds' "${_spin[$spin_idx]}" "$elapsed" "$timeout" >&2
         spin_idx=$(( (spin_idx + 1) % ${#_spin[@]} ))
         sleep "$interval"
         ((elapsed+=interval))

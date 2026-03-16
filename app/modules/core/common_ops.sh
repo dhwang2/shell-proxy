@@ -148,7 +148,20 @@ read_prompt() {
 fi
 
 _PROXY_SPIN_FRAMES=(
-    '▏' '▎' '▍' '▌' '▋' '▊' '▉' '█' '▉' '▊' '▋' '▌' '▍' '▎'
+    '█▓▒░░░░░░░'
+    '░█▓▒░░░░░░'
+    '░░█▓▒░░░░░'
+    '░░░█▓▒░░░░'
+    '░░░░█▓▒░░░'
+    '░░░░░█▓▒░░'
+    '░░░░░░█▓▒░'
+    '░░░░░░░█▓▒'
+    '░░░░░░█▓▒░'
+    '░░░░░█▓▒░░'
+    '░░░░█▓▒░░░'
+    '░░░█▓▒░░░░'
+    '░░█▓▒░░░░░'
+    '░█▓▒░░░░░░'
 )
 _PROXY_SPIN_COLOR='\033[38;2;215;119;87m'
 _PROXY_SPIN_INTERVAL=0.12
@@ -176,7 +189,7 @@ proxy_run_with_spinner() {
     "$@" >"$tmp_out" 2>"$tmp_err" &
     pid=$!
     while kill -0 "$pid" 2>/dev/null; do
-        printf '\r\033[K  '"${_PROXY_SPIN_COLOR}"'%s\033[0m %s' "${_spin[$spin_idx]}" "$message" > /dev/tty
+        printf '\r\033[K'"${_PROXY_SPIN_COLOR}"'%s\033[0m %s' "${_spin[$spin_idx]}" "$message" > /dev/tty
         spin_idx=$(( (spin_idx + 1) % ${#_spin[@]} ))
         sleep "${_PROXY_SPIN_INTERVAL}"
     done
