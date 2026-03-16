@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# shell-proxy environment config and constants
+# shell-proxy 环境配置与常量定义
 
 # 核心根目录
 WORK_DIR='/etc/shell-proxy'
