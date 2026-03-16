@@ -1036,3 +1036,61 @@ Measured 6-protocol real-menu install for user `u193x1` -- before fix: `proto_5(
 
 - **Verification**:
   - `bash -n` passed on `common_ops.sh` and `protocol_tls_ops.sh`.
+
+##### u-2-124 ux: bouncing gradient bar spinner (2026-03-16)
+> **Target**: Replace spinner with a richer bouncing gradient bar animation.
+
+- **Changes**:
+  1. Iterated through multiple animation styles (braille → heavy braille → pulsing block → bouncing gradient bar) based on visual feedback.
+  2. Final: 14-frame bouncing `█▓▒░` bar at 120ms interval in `rgb(215,119,87)`, left-aligned (removed 2-space indent).
+  3. Reverted `read -t` to `sleep` — at 120ms interval fork cost is negligible, avoids busy-loop risk on some bash versions.
+
+- **Verification**:
+  - `bash -n` passed; deployed and verified on `gcp-oregon`.
+
+- **Commits**: `da0d8b8`, `796c576`, `e30115b`
+
+##### u-2-125 ux: simplify user-facing output (2026-03-16)
+> **Target**: Reduce verbose output across all user-facing flows for a cleaner experience.
+
+- **Changes**:
+  1. Self-update: merged version prompt into single line `shell-proxy:(old) -> (new)`, simplified file count display, removed verbose `变更文件(N):` header, changed `spin_done` → `spin_clear_line` to avoid extra blank line.
+  2. Bootstrap/install: removed duplicate install source line, verbose `正在安装依赖...`/`配置 Systemd 服务...`/`安装管理脚本...`/caddy version messages, simplified non-interactive hint.
+  3. Uninstall: removed blank lines between component sections (`\n` prefix in echo) and all verbose progress messages (`正在停止服务...`/`正在删除服务文件...`/`正在清理缓存...`/`正在清理文件...`).
+  4. Autoconfig: removed `已自动生成 sing-box 配置` and `网络栈识别` messages.
+  5. Bootstrap transition: removed `⟳ 配置生效中...` message.
+  6. Protocol install: changed `green "协议安装成功"` → `green "✓ 协议安装成功!"`.
+
+- **Verification**:
+  - `bash -n` passed on all modified files; deployed and verified on `gcp-oregon`.
+
+- **Commits**: `27ca576`, `b58a4a8`, `677dcaf`, `d4cd43b`, `3f21a90`, `230e021`, `8aab30b`, `272aadf`, `c65186e`, `71b9b98`
+
+##### u-2-126 bugfix: smart quotes and fresh install errors (2026-03-16)
+> **Target**: Fix encoding bugs causing bash parse errors and file read failures.
+
+- **Investigation**:
+  1. `read: '[y/N]:': not a valid identifier` — hex dump (`xxd`) revealed `e2 80 9c`/`e2 80 9d` (Unicode curly quotes) instead of ASCII `22` in string delimiters.
+  2. `.log_cleanup_ts` file not found on fresh install — `$(< file 2>/dev/null)` doesn't suppress bash's own redirect error when file is missing.
+
+- **Fixes**:
+  1. Replaced Unicode curly quotes with ASCII `"` in `self_update.sh` and `protocol_install_singbox_ops.sh` via `sed` byte-level substitution.
+  2. Changed `$(< "$file" 2>/dev/null)` to `$(cat "$file" 2>/dev/null)` with `|| last_ts=0` fallback in `runtime_status_ops.sh`.
+
+- **Verification**:
+  - `bash -n` passed; deployed and verified on `gcp-oregon`.
+
+- **Commits**: `2fa372a`, `0d1c6fc`, `e30115b` (partial)
+
+##### u-2-127 refactor: code review cleanup (2026-03-16)
+> **Target**: Fix issues found by `/simplify` code reviews.
+
+- **Changes**:
+  1. Negated `true` placeholder branches to proper `if !` guards in `install.sh` (3 sites).
+  2. Removed TOCTOU anti-pattern (`[[ -f file ]] && cat file`) in `runtime_status_ops.sh` — operate directly and handle error.
+  3. Removed duplicate `source routing_core_ops.sh` in `routing_autoconfig_ops.sh` (copy-paste bug).
+
+- **Verification**:
+  - `bash -n` passed on all modified files.
+
+- **Commit**: `e396001`

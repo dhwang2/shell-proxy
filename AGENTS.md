@@ -2,7 +2,7 @@
 
 AI-facing maintenance rules for the `shell-proxy` repository.
 
-Last Updated: 2026-03-14
+Last Updated: 2026-03-16
 
 ## Scope
 

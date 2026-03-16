@@ -1,8 +1,8 @@
 # shell-proxy
 
-Bash production line — a collection of VPS proxy management scripts.
+Modular Bash toolkit for VPS proxy service deployment and management.
 
-Current official version: `v0.0.0`
+Current version: `v0.0.0`
 
 ## Installation
 
@@ -50,6 +50,7 @@ shell-proxy/
 
 ## Runtime
 
-- Running root directory: `/etc/shell-proxy`
-- Core manifest and managed file definitions: `app/env.sh`
+- Root directory: `/etc/shell-proxy`
+- Module manifest: `app/env.sh`
+- Supported protocols: VLESS, TUIC, Trojan, AnyTLS, Shadowsocks 2022, Snell v5 + ShadowTLS v3
 

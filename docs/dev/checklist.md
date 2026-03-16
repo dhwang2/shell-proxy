@@ -325,3 +325,29 @@
   - [x] Fixed 3 printf lines where `${_PROXY_SPIN_COLOR}` was inside single quotes (variable won't expand); applied quote-breaking pattern.
   - [x] Replaced `sleep 0.08` with `read -t 0.08` builtin in 3 spinner loops to eliminate ~12.5 fork+exec/sec.
   - [x] Re-validated with `bash -n` on both modified files.
+
+- [x] **u-2-124 ux: bouncing gradient bar spinner (2026-03-16)**
+  - [x] Replaced braille/pulsing-dot spinner with bouncing gradient bar `█▓▒░` (14 frames, 120ms, `rgb(215,119,87)`).
+  - [x] Left-aligned spinner output (removed 2-space indent) across all 4 spinner sites.
+  - [x] Reverted `read -t` back to `sleep` (fork cost negligible at 120ms interval).
+  - [x] Re-validated with `bash -n`; deployed and verified on `gcp-oregon`.
+
+- [x] **u-2-125 ux: simplify user-facing output (2026-03-16)**
+  - [x] Self-update: merged version prompt, simplified file count `正在更新 N/T 个文件`, removed verbose headers, fixed `spin_done` → `spin_clear_line` to avoid extra blank line.
+  - [x] Bootstrap/install: removed duplicate install source line, verbose dependency/service/caddy messages, non-interactive hint simplified.
+  - [x] Uninstall: removed blank lines between component sections and verbose progress messages.
+  - [x] Autoconfig: removed `已自动生成 sing-box 配置` and `网络栈识别` messages.
+  - [x] Bootstrap transition: removed `⟳ 配置生效中...` message.
+  - [x] Protocol install: added `✓` checkmark to success message.
+  - [x] Re-validated with `bash -n`; deployed and verified on `gcp-oregon`.
+
+- [x] **u-2-126 bugfix: smart quotes and fresh install errors (2026-03-16)**
+  - [x] Fixed Unicode curly quotes `\xe2\x80\x9c`/`\xe2\x80\x9d` in `self_update.sh` and `protocol_install_singbox_ops.sh` causing bash parse errors.
+  - [x] Fixed `$(< file 2>/dev/null)` → `$(cat file 2>/dev/null)` in `runtime_status_ops.sh` for missing file on fresh install.
+  - [x] Re-validated with `bash -n`; deployed and verified on `gcp-oregon`.
+
+- [x] **u-2-127 refactor: code review cleanup (2026-03-16)**
+  - [x] Negated `true` placeholder branches to proper `if !` guards in `install.sh`.
+  - [x] Removed TOCTOU anti-pattern in `runtime_status_ops.sh`.
+  - [x] Removed duplicate `source routing_core_ops.sh` in `routing_autoconfig_ops.sh`.
+  - [x] Re-validated with `bash -n`.
