@@ -94,10 +94,6 @@ routing_autoconfig_load_reconcile_modules() {
             # shellcheck disable=SC1090
             source "${module_root}/routing/routing_core_ops.sh"
         fi
-        if [[ -f "${module_root}/routing/routing_core_ops.sh" ]]; then
-            # shellcheck disable=SC1090
-            source "${module_root}/routing/routing_core_ops.sh"
-        fi
 
         if declare -F build_auto_singbox_base_json >/dev/null 2>&1 \
             && declare -F routing_load_state_json >/dev/null 2>&1 \

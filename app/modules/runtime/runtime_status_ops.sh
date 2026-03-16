@@ -40,7 +40,7 @@ ensure_runtime_log_files() {
 cleanup_runtime_logs() {
     local now_ts last_ts
     printf -v now_ts '%(%s)T' -1 2>/dev/null || now_ts="$(date +%s 2>/dev/null || echo 0)"
-    last_ts="$([[ -f "$RUNTIME_LOG_CLEAN_TS_FILE" ]] && cat "$RUNTIME_LOG_CLEAN_TS_FILE" 2>/dev/null)" || last_ts=0
+    last_ts="$(cat "$RUNTIME_LOG_CLEAN_TS_FILE" 2>/dev/null)" || last_ts=0
     [[ "$now_ts" =~ ^[0-9]+$ ]] || now_ts=0
     [[ "$last_ts" =~ ^[0-9]+$ ]] || last_ts=0
 

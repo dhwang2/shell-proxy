@@ -185,9 +185,7 @@ install_caddy() {
         tar -zxf "$archive_path" -C "$(dirname "$CADDY_BIN")" caddy >/dev/null 2>&1
         rm -f "$archive_path"
         chmod +x "$CADDY_BIN"
-        if "$CADDY_BIN" version >/dev/null 2>&1; then
-            true
-        else
+        if ! "$CADDY_BIN" version >/dev/null 2>&1; then
             red "caddy 安装失败"
             return 1
         fi
@@ -228,9 +226,7 @@ install_control_script() {
     local rel_path="" dest_path="" install_src_dir="" source_path="" source_real="" dest_real=""
     repo_ref="${PROXY_INSTALL_BOOTSTRAP_REF:-}"
     install_src_dir="${PROXY_INSTALL_BOOTSTRAP_SOURCE_DIR:-}"
-    if [[ -n "$repo_ref" && -n "$install_src_dir" && -d "$install_src_dir" && -f "$install_src_dir/env.sh" ]]; then
-        true
-    else
+    if [[ -z "$repo_ref" || -z "$install_src_dir" || ! -d "$install_src_dir" || ! -f "$install_src_dir/env.sh" ]]; then
         install_src_dir="$(dirname "$0")"
         repo_ref=""
     fi
