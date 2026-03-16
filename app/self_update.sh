@@ -407,7 +407,7 @@ main() {
         sleep 0.3
     done
     wait "$dl_pid" 2>/dev/null || true
-    spin_done
+    spin_clear_line
 
     if [[ -f "$dl_fail_file" ]]; then
         if [[ -s "$dl_fail_list_file" ]]; then
