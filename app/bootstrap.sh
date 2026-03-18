@@ -11,14 +11,29 @@ REPO_USER="dhwang2"
 REPO_NAME="shell-proxy"
 BRANCH="main"
 REPO_SOURCE_SUBDIR="app"
+BOOTSTRAP_URL="https://raw.githubusercontent.com/${REPO_USER}/${REPO_NAME}/${BRANCH}/${REPO_SOURCE_SUBDIR}/bootstrap.sh"
 
 red() { echo -e "\033[31m\033[01m$1\033[0m"; }
 green() { echo -e "\033[32m\033[01m$1\033[0m"; }
 yellow() { echo -e "\033[33m\033[01m$1\033[0m"; }
 
+ensure_root() {
+    if [[ "${EUID}" -eq 0 ]]; then
+        return 0
+    fi
+    if ! command -v sudo >/dev/null 2>&1; then
+        red "错误: 当前不是 root，且系统未安装 sudo。请使用 root 用户运行此脚本。"
+        exit 1
+    fi
+    green "检测到非 root 用户，正在尝试通过 sudo 继续安装..."
+    exec sudo -E bash -c 'curl -fsSL "$1" | bash' _ "$BOOTSTRAP_URL"
+}
+
 echo "================================================="
 echo "   shell-proxy 自动化部署"
 echo "================================================="
+
+ensure_root
 
 INSTALL_DIR="/tmp/proxy-install"
 ARCHIVE_FILE="${INSTALL_DIR}/proxy-install.tar.gz"
