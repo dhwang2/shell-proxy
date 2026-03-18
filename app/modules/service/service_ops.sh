@@ -221,7 +221,7 @@ uninstall_service() {
 
     proxy_cache_purge_all
 
-    rm -f /usr/bin/sproxy /usr/bin/proxy
+    rm -f /usr/bin/sproxy
     rm -rf "$WORK_DIR"
     rm -rf "$TEMP_DIR"
 

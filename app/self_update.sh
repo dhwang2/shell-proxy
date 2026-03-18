@@ -181,7 +181,6 @@ install_proxy_command_wrapper() {
 bash ${WORK_DIR}/management.sh "\$@"
 EOF
     chmod +x /usr/bin/sproxy
-    rm -f /usr/bin/proxy
 }
 
 main() {

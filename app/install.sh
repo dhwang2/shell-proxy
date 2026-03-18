@@ -253,7 +253,6 @@ install_control_script() {
 bash ${WORK_DIR}/management.sh "\$@"
 EOF
     chmod +x /usr/bin/sproxy
-    rm -f /usr/bin/proxy
 
     if ! proxy_rebuild_menu_bundles "$WORK_DIR"; then
         proxy_remove_menu_bundles "$WORK_DIR" || true
