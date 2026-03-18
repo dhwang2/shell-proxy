@@ -423,7 +423,7 @@ update_self() {
             fi
             green "脚本更新已生效，正在切换到新菜单..."
             exec bash "$management_script" menu
-            red "自动切换新菜单失败，请重新执行 proxy。"
+            red "自动切换新菜单失败，请重新执行 sproxy。"
         fi
         exit 0
     fi

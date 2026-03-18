@@ -200,7 +200,8 @@ uninstall_service() {
     echo "  - $WATCHDOG_SERVICE_FILE"
     echo "[3] 配置文件与数据:"
     echo "  - $WORK_DIR (包含 conf, logs, subscription, caddy 证书/acme 数据)"
-    echo "  - /usr/bin/proxy (快捷指令)"
+    echo "  - /usr/bin/sproxy (快捷指令)"
+    echo "  - /usr/bin/proxy (旧快捷指令兼容清理)"
     proxy_menu_divider
 
     read -p "确认彻底卸载? [y/N]: " confirm
@@ -221,7 +222,7 @@ uninstall_service() {
 
     proxy_cache_purge_all
 
-    rm -f /usr/bin/proxy
+    rm -f /usr/bin/sproxy /usr/bin/proxy
     rm -rf "$WORK_DIR"
     rm -rf "$TEMP_DIR"
 

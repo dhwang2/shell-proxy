@@ -2,7 +2,7 @@
 
 Modular Bash toolkit for VPS proxy service deployment and management.
 
-Current version: `v0.0.0`
+Current version: `v0.1.0`
 
 ## Installation
 
@@ -15,12 +15,12 @@ curl -fsSL https://raw.githubusercontent.com/dhwang2/shell-proxy/main/app/bootst
 ## Common Commands
 
 ```bash
-proxy menu
-proxy start
-proxy stop
-proxy restart
-proxy status
-proxy log
+sproxy menu
+sproxy start
+sproxy stop
+sproxy restart
+sproxy status
+sproxy log
 sudo bash /etc/shell-proxy/self_update.sh repo
 ```
 
@@ -55,4 +55,3 @@ app/
 ## License
 
 [MIT](LICENSE)
-

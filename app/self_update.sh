@@ -176,11 +176,12 @@ repo_source_tree_prefix() {
 }
 
 install_proxy_command_wrapper() {
-    cat > /usr/bin/proxy <<EOF
+    cat > /usr/bin/sproxy <<EOF
 #!/bin/bash
 bash ${WORK_DIR}/management.sh "\$@"
 EOF
-    chmod +x /usr/bin/proxy
+    chmod +x /usr/bin/sproxy
+    rm -f /usr/bin/proxy
 }
 
 main() {
@@ -237,7 +238,7 @@ main() {
 
     if [[ "$SELF_UPDATE_CHAINLOADED" != "1" && -n "$source_record" && -n "$current_ref" ]]; then
         if [[ ! -t 0 ]]; then
-            red "当前调用不是交互式终端，无法确认脚本更新。请通过 proxy 菜单（shell-proxy）执行"脚本更新"并手动确认。"
+            red "当前调用不是交互式终端，无法确认脚本更新。请通过 sproxy 菜单（shell-proxy）执行脚本更新并手动确认。"
             return 11
         fi
         local yn=""
@@ -446,7 +447,7 @@ main() {
     fi
 
     if (( preconfirmed_update == 0 )) && [[ ! -t 0 ]]; then
-        red "当前调用不是交互式终端，无法确认脚本更新。请通过 proxy 菜单（shell-proxy）执行"脚本更新"并手动确认。"
+        red "当前调用不是交互式终端，无法确认脚本更新。请通过 sproxy 菜单（shell-proxy）执行脚本更新并手动确认。"
         return 11
     fi
     if (( preconfirmed_update == 0 )); then
@@ -495,7 +496,7 @@ main() {
     [[ -n "$source_record" ]] && write_script_source_ref "$source_record" || true
     if [[ ! -t 0 || ! -t 1 ]]; then
         green "脚本文件已更新到 ${WORK_DIR}"
-        yellow "请重新执行 proxy 以加载新脚本。"
+        yellow "请重新执行 sproxy 以加载新脚本。"
     fi
     return 10
 }

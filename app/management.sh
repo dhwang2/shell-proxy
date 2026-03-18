@@ -126,7 +126,7 @@ require_base_modules() {
 }
 
 if ! require_base_modules; then
-    red "错误: 未找到模块文件，请执行 proxy update（shell-proxy）或重新安装。"
+    red "错误: 未找到模块文件，请执行 sudo bash /etc/shell-proxy/self_update.sh repo（shell-proxy）或重新安装。"
     exit 1
 fi
 
@@ -134,7 +134,7 @@ source_module_list "${BASE_MODULE_FILES[@]}"
 
 load_module_group() {
     if ! all_modules_exist "$@"; then
-        red "错误: 未找到菜单模块文件，请执行 proxy update（shell-proxy）或重新安装。"
+        red "错误: 未找到菜单模块文件，请执行 sudo bash /etc/shell-proxy/self_update.sh repo（shell-proxy）或重新安装。"
         return 1
     fi
     source_module_list "$@"
@@ -154,12 +154,12 @@ resolve_named_menu_module_files() {
     mapfile -t fallback_module_files < <(proxy_menu_module_rel_paths "$group") || return 1
     if (( ${#fallback_module_files[@]} > 0 )) \
         && ! proxy_assert_menu_fallback_contract "$group" "" "${fallback_module_files[0]:-}"; then
-        red "错误: 菜单 fallback 合同损坏，请执行 proxy update（shell-proxy）或重新安装。"
+        red "错误: 菜单 fallback 合同损坏，请执行 sudo bash /etc/shell-proxy/self_update.sh repo（shell-proxy）或重新安装。"
         return 1
     fi
     if proxy_menu_fallback_entry_rel_path "$group" >/dev/null 2>&1 \
         && (( ${#fallback_module_files[@]} != 1 )); then
-        red "错误: 菜单 fallback 入口数量异常，请执行 proxy update（shell-proxy）或重新安装。"
+        red "错误: 菜单 fallback 入口数量异常，请执行 sudo bash /etc/shell-proxy/self_update.sh repo（shell-proxy）或重新安装。"
         return 1
     fi
     printf '%s\n' "${fallback_module_files[@]}"
@@ -431,7 +431,7 @@ run_menu_group_action() {
         return 1
     }
     if ! proxy_assert_menu_handler_loaded "$handler"; then
-        red "错误: 菜单模块未导出处理函数 ${handler}，请执行 proxy update（shell-proxy）或重新安装。"
+        red "错误: 菜单模块未导出处理函数 ${handler}，请执行 sudo bash /etc/shell-proxy/self_update.sh repo（shell-proxy）或重新安装。"
         return 1
     fi
     if [[ -n "${PROXY_CONFIG_APPLY_MODE+x}" ]]; then

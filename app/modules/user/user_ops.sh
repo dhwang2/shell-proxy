@@ -54,7 +54,7 @@ user_menu_run_action() {
     [[ -n "$action_name" ]] || return 1
 
     user_menu_support_load_modules || {
-        red "用户管理模块加载失败，请执行 proxy update（shell-proxy）或重新安装。"
+        red "用户管理模块加载失败，请执行 sudo bash /etc/shell-proxy/self_update.sh repo（shell-proxy）或重新安装。"
         return 1
     }
     user_menu_prepare_action "$action_name" "$conf_file" || return 1

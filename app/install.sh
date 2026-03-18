@@ -248,11 +248,12 @@ install_control_script() {
         chmod +x "$(proxy_managed_install_path "$rel_path")"
     done < <(proxy_managed_exec_rel_paths)
 
-    cat > /usr/bin/proxy <<EOF
+    cat > /usr/bin/sproxy <<EOF
 #!/bin/bash
 bash ${WORK_DIR}/management.sh "\$@"
 EOF
-    chmod +x /usr/bin/proxy
+    chmod +x /usr/bin/sproxy
+    rm -f /usr/bin/proxy
 
     if ! proxy_rebuild_menu_bundles "$WORK_DIR"; then
         proxy_remove_menu_bundles "$WORK_DIR" || true
@@ -275,9 +276,9 @@ main() {
     green "安装完成！"
     sleep 1
     if [[ -t 0 && -t 1 ]]; then
-        proxy menu
+        sproxy menu
     else
-        yellow "检测到非交互终端，已跳过菜单。快捷指令(shell-proxy): proxy"
+        yellow "检测到非交互终端，已跳过菜单。快捷指令(shell-proxy): sproxy"
     fi
 }
 

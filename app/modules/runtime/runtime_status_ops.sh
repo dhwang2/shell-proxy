@@ -718,7 +718,7 @@ print_dashboard() {
 
     proxy_menu_rule "═" 68 "1;37"
     echo -e "${C_TITLE}                  shell-proxy 一键部署 [服务端]${C_RESET}"
-    echo -e "${C_TITLE}         作者: dhwang2    命令: proxy     版本: ${version}${C_RESET}"
+    echo -e "${C_TITLE}        作者: dhwang2    命令: sproxy    版本: ${version}${C_RESET}"
     proxy_menu_rule "═" 68 "1;37"
     echo -e "  ${C_LABEL}系统:${C_RESET} ${C_VAL_SYS}${os_id}${C_RESET} ${C_LABEL}| 架构:${C_RESET} ${C_VAL_SYS}${arch}${C_RESET} ${C_LABEL}| 网络栈:${C_RESET} ${C_VAL_SYS}${ip_stack}${C_RESET}"
     echo -e "  ${C_LABEL}状态:${C_RESET} ${status}"
