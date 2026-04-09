@@ -120,7 +120,7 @@ while IFS= read -r __bundle_name; do
     [[ -n "${__bundle_decl}" ]] || continue
     printf '%s\n' "${__bundle_decl/#declare /declare -g }"
 done < <(
-    comm -13 \
+    LC_ALL=C comm -13 \
         <(printf '%s\n' "${__bundle_before_vars[@]}") \
         <(printf '%s\n' "${__bundle_after_vars[@]}")
 )
@@ -137,7 +137,7 @@ while IFS= read -r __bundle_name; do
     declare -f "${__bundle_name}"
     printf '\n'
 done < <(
-    comm -13 \
+    LC_ALL=C comm -13 \
         <(printf '%s\n' "${__bundle_before_funcs[@]}") \
         <(printf '%s\n' "${__bundle_after_funcs[@]}")
 )
@@ -236,7 +236,7 @@ while IFS= read -r __bundle_name; do
     [[ -n "${__bundle_decl}" ]] || continue
     printf '%s\n' "${__bundle_decl/#declare /declare -g }"
 done < <(
-    comm -13 \
+    LC_ALL=C comm -13 \
         <(printf '%s\n' "${__bundle_before_vars[@]}") \
         <(printf '%s\n' "${__bundle_after_vars[@]}")
 )
@@ -253,7 +253,7 @@ while IFS= read -r __bundle_name; do
     declare -f "${__bundle_name}"
     printf '\n'
 done < <(
-    comm -13 \
+    LC_ALL=C comm -13 \
         <(printf '%s\n' "${__bundle_before_funcs[@]}") \
         <(printf '%s\n' "${__bundle_after_funcs[@]}")
 )
