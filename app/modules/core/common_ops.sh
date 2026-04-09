@@ -2,12 +2,7 @@
 
 if ! declare -F ui_clear >/dev/null 2>&1; then
 ui_clear() {
-    if [[ -t 1 ]] \
-        && command -v tput >/dev/null 2>&1 \
-        && [[ -n "${TERM:-}" && "${TERM}" != "unknown" ]] \
-        && tput cols >/dev/null 2>&1; then
-        { tput cup 0 0 && tput ed; } 2>/dev/null || printf '\033[H\033[2J'
-    fi
+    :
 }
 fi
 
