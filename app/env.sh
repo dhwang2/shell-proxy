@@ -94,6 +94,7 @@ EOF
             cat <<'EOF'
 modules/service/service_ops.sh
 modules/core/core_ops.sh
+modules/protocol/protocol_runtime_ops.sh
 modules/network/network_firewall_ops.sh
 modules/network/network_ops.sh
 modules/protocol/protocol_ops.sh

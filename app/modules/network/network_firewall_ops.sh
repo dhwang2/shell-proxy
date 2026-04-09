@@ -6,7 +6,7 @@ if [[ -f "$COMMON_OPS_FILE" ]]; then
     source "$COMMON_OPS_FILE"
 fi
 
-PROTOCOL_RUNTIME_OPS_FILE="${PROTOCOL_RUNTIME_OPS_FILE:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/protocol_runtime_ops.sh}"
+PROTOCOL_RUNTIME_OPS_FILE="${PROTOCOL_RUNTIME_OPS_FILE:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../protocol/protocol_runtime_ops.sh}"
 if [[ -f "$PROTOCOL_RUNTIME_OPS_FILE" ]]; then
     # shellcheck disable=SC1090
     source "$PROTOCOL_RUNTIME_OPS_FILE"
