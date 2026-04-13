@@ -491,21 +491,99 @@ network_firewall_release_iptables() {
 
 network_firewall_show_current_rules() {
     local backend="${1:-$(network_firewall_backend)}"
+    local conf_file="${2:-}"
+    [[ -z "$conf_file" ]] && conf_file="$(get_conf_file 2>/dev/null || true)"
+
+    local c_reset="" c_proto="" c_port="" c_label=""
+    if [[ -t 1 ]]; then
+        c_reset=$'\033[0m'
+        c_proto=$'\033[36;1m'
+        c_port=$'\033[32;1m'
+        c_label=$'\033[33;1m'
+    fi
+
+    # Build label lookup from desired port rows: labels[proto|port] = label
+    local -A labels=()
+    local line proto port label key current
+    while IFS= read -r line; do
+        [[ -n "$line" ]] || continue
+        IFS=$'\t' read -r proto port label <<<"$line"
+        [[ "$port" =~ ^[0-9]+$ && -n "$proto" ]] || continue
+        key="${proto}|${port}"
+        if [[ -z "${labels[$key]+x}" ]]; then
+            labels["$key"]="$label"
+            continue
+        fi
+        current=",${labels[$key]},"
+        [[ "$current" == *",${label},"* ]] && continue
+        labels["$key"]+=",${label}"
+    done < <(network_firewall_desired_port_rows "$conf_file")
+
+    # Extract allowed ports from firewall rules
+    local -a order=()
+    local -A seen=()
     case "$backend" in
         nft)
-            nft list table inet proxy_firewall 2>/dev/null || echo "未检测到 proxy_firewall 规则表"
+            local nft_out rule nft_proto nft_ports nft_port
+            nft_out="$(nft list table inet proxy_firewall 2>/dev/null || true)"
+            if [[ -z "$nft_out" ]]; then
+                echo "  未检测到 proxy_firewall 规则表"
+                return 0
+            fi
+            while IFS= read -r rule; do
+                rule="$(printf '%s' "$rule" | sed -E 's/^[[:space:]]+//')"
+                [[ "$rule" == *"dport {"*accept* ]] || continue
+                nft_proto="$(printf '%s' "$rule" | awk '{print $1}')"
+                nft_ports="$(printf '%s' "$rule" | sed -E 's/.*\{([^}]+)\}.*/\1/' | tr ',' ' ')"
+                for nft_port in $nft_ports; do
+                    nft_port="$(printf '%s' "$nft_port" | tr -d '[:space:]')"
+                    [[ "$nft_port" =~ ^[0-9]+$ ]] || continue
+                    key="${nft_proto}|${nft_port}"
+                    [[ -z "${seen[$key]+x}" ]] || continue
+                    seen["$key"]=1
+                    order+=("$key")
+                done
+            done <<< "$nft_out"
             ;;
         iptables)
-            iptables -S PROXY_FIREWALL_INPUT 2>/dev/null || echo "未检测到 PROXY_FIREWALL_INPUT"
-            if command -v ip6tables >/dev/null 2>&1; then
-                echo
-                ip6tables -S PROXY_FIREWALL_INPUT6 2>/dev/null || true
+            local ipt_out ipt_line ipt_proto ipt_port
+            ipt_out="$(iptables -S PROXY_FIREWALL_INPUT 2>/dev/null || true)"
+            if [[ -z "$ipt_out" ]]; then
+                echo "  未检测到 PROXY_FIREWALL_INPUT"
+                return 0
             fi
+            while IFS= read -r ipt_line; do
+                [[ "$ipt_line" == *"--dport"* ]] || continue
+                ipt_proto="$(printf '%s' "$ipt_line" | sed -n 's/.*-p \([a-z]*\).*/\1/p')"
+                ipt_port="$(printf '%s' "$ipt_line" | sed -n 's/.*--dport \([0-9]*\).*/\1/p')"
+                [[ "$ipt_port" =~ ^[0-9]+$ && -n "$ipt_proto" ]] || continue
+                key="${ipt_proto}|${ipt_port}"
+                [[ -z "${seen[$key]+x}" ]] || continue
+                seen["$key"]=1
+                order+=("$key")
+            done <<< "$ipt_out"
             ;;
         *)
-            echo "当前系统未检测到可用的 nftables/iptables 后端。"
+            echo "  当前系统未检测到可用的 nftables/iptables 后端"
+            return 0
             ;;
     esac
+
+    if ((${#order[@]} == 0)); then
+        echo "  无放行端口"
+        return 0
+    fi
+
+    local item
+    for item in "${order[@]}"; do
+        proto="${item%%|*}"
+        port="${item##*|}"
+        label="${labels[$item]:-unknown}"
+        printf '  • %b/%b [%b]\n' \
+            "${c_proto}${proto}${c_reset}" \
+            "${c_port}${port}${c_reset}" \
+            "${c_label}${label}${c_reset}"
+    done
 }
 
 manage_firewall_convergence() {
@@ -591,9 +669,7 @@ manage_firewall_convergence() {
                     continue
                 fi
                 if [[ -z "${custom_input//[[:space:]]/}" ]]; then
-                    if network_firewall_save_custom_ports_rows <<'EOF'
-EOF
-                    then
+                    if printf '' | network_firewall_save_custom_ports_rows; then
                         green "自定义端口已清空"
                     else
                         red "自定义端口清空失败"
@@ -607,7 +683,7 @@ EOF
                 fi
                 ;;
             4)
-                network_firewall_show_current_rules "$backend"
+                network_firewall_show_current_rules "$backend" "$conf_file"
                 ;;
             *)
                 return 0

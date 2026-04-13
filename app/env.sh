@@ -96,6 +96,7 @@ modules/service/service_ops.sh
 modules/core/core_ops.sh
 modules/protocol/protocol_runtime_ops.sh
 modules/network/network_firewall_ops.sh
+modules/network/network_fail2ban_ops.sh
 modules/network/network_ops.sh
 modules/protocol/protocol_ops.sh
 EOF
@@ -359,6 +360,7 @@ modules/core/config_ops.sh
 modules/core/core_ops.sh
 modules/core/release_ops.sh
 modules/core/systemd_ops.sh
+modules/network/network_fail2ban_ops.sh
 modules/network/network_firewall_ops.sh
 modules/network/network_ops.sh
 modules/protocol/protocol_install_singbox_ops.sh

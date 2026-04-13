@@ -77,8 +77,6 @@ network_fail2ban_show_status() {
         fi
     fi
 
-    echo "服务状态: ${service_status}"
-
     if network_fail2ban_service_running && command -v fail2ban-client >/dev/null 2>&1; then
         jail_output="$(fail2ban-client status sshd 2>/dev/null || true)"
         if [[ -n "$jail_output" ]]; then
@@ -92,19 +90,40 @@ network_fail2ban_show_status() {
         fi
     fi
 
-    echo "SSH Jail: ${jail_status}"
-    [[ -n "$max_retry" ]] && echo "最大重试: ${max_retry}"
-    [[ -n "$ban_time" ]] && echo "封禁时长: ${ban_time}s"
-    [[ -n "$find_time" ]] && echo "检测时窗: ${find_time}s"
-    [[ -n "$current_banned" ]] && echo "当前封禁: ${current_banned}"
-    [[ -n "$total_banned" ]] && echo "累计封禁: ${total_banned}"
+    local c_reset="" c_key="" c_val=""
+    if [[ -t 1 ]]; then
+        c_reset=$'\033[0m'
+        c_key=$'\033[33m'
+        c_val=$'\033[0m'
+    fi
+
+    local -a rows=()
+    rows+=("服务状态|${service_status}")
+    rows+=("SSH Jail|${jail_status}")
+    [[ -n "$max_retry" ]] && rows+=("最大重试|${max_retry}")
+    [[ -n "$ban_time" ]] && rows+=("封禁时长|${ban_time}s")
+    [[ -n "$find_time" ]] && rows+=("检测时窗|${find_time}s")
+    [[ -n "$current_banned" ]] && rows+=("当前封禁|${current_banned}")
+    [[ -n "$total_banned" ]] && rows+=("累计封禁|${total_banned}")
     if [[ -n "$banned_ips" ]]; then
         local banned_ip=""
-        echo "封禁 IP:"
         for banned_ip in $banned_ips; do
-            printf '  %s\n' "$banned_ip"
+            rows+=("封禁 IP|${banned_ip}")
         done
     fi
+
+    local max_key=0 row key val
+    for row in "${rows[@]}"; do
+        key="${row%%|*}"
+        local klen=${#key}
+        (( klen > max_key )) && max_key=$klen
+    done
+
+    for row in "${rows[@]}"; do
+        key="${row%%|*}"
+        val="${row#*|}"
+        printf "  ${c_key}%-${max_key}s${c_reset}  ${c_val}%s${c_reset}\n" "$key" "$val"
+    done
     proxy_menu_divider
 }
 
