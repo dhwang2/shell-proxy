@@ -18,6 +18,12 @@ if [[ -f "$NETWORK_FIREWALL_OPS_FILE" ]]; then
     source "$NETWORK_FIREWALL_OPS_FILE"
 fi
 
+NETWORK_FAIL2BAN_OPS_FILE="${NETWORK_FAIL2BAN_OPS_FILE:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/network_fail2ban_ops.sh}"
+if [[ -f "$NETWORK_FAIL2BAN_OPS_FILE" ]]; then
+    # shellcheck disable=SC1090
+    source "$NETWORK_FAIL2BAN_OPS_FILE"
+fi
+
 is_bbr_enabled() {
     local cc qdisc
     cc="$(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null || true)"
@@ -55,6 +61,7 @@ manage_network_management() {
         proxy_menu_header "网络管理"
         echo "  1. BBR 网络优化"
         echo "  2. 服务器防火墙收敛"
+        echo "  3. fail2ban 防护"
         proxy_menu_rule "═"
         if ! read_prompt choice "选择序号(回车取消): "; then
             return 0
@@ -63,6 +70,7 @@ manage_network_management() {
         case "$choice" in
             1) manage_network_optimization ;;
             2) manage_firewall_convergence ;;
+            3) manage_fail2ban_protection ;;
             *) return 0 ;;
         esac
     done
