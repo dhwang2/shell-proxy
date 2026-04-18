@@ -87,23 +87,6 @@ short_sha256() {
     echo "${sha:0:12}"
 }
 
-ensure_self_update_release_helpers() {
-    if declare -F write_script_source_ref >/dev/null 2>&1 \
-        && declare -F read_script_source_ref >/dev/null 2>&1; then
-        return 0
-    fi
-
-    local core_dir="${WORK_DIR}/modules/core"
-    if [[ -f "${core_dir}/cache_ops.sh" ]]; then
-        # shellcheck disable=SC1090
-        source "${core_dir}/cache_ops.sh"
-    fi
-    if [[ -f "${core_dir}/release_ops.sh" ]]; then
-        # shellcheck disable=SC1090
-        source "${core_dir}/release_ops.sh"
-    fi
-}
-
 resolve_update_source() {
     local mode="$1" repo_name="$2"
     local resolved_ref="" source_label="" source_record="" base_url=""
@@ -200,7 +183,6 @@ main() {
     target_label="$( [[ "$SELF_UPDATE_MODE" == "release" ]] && echo "最新 RELEASE" || echo "仓库最新版" )"
     if [[ "$SELF_UPDATE_MODE" == "release" ]]; then
         local latest_release_tag=""
-        ensure_self_update_release_helpers
         latest_release_tag="$(resolve_latest_github_release_tag_cached "$repo_name" 300 2>/dev/null || true)"
         [[ -n "$latest_release_tag" ]] && write_proxy_release_tag_cache "$latest_release_tag" || true
     fi
@@ -213,7 +195,6 @@ main() {
     if [[ "$SELF_UPDATE_MODE" == "repo" && -n "$resolved_ref" ]]; then
         target_label="(${resolved_ref:0:8})"
     fi
-    ensure_self_update_release_helpers
     current_ref="$(read_script_source_ref 2>/dev/null || true)"
     ts="$(date +%s)"
 
@@ -367,7 +348,6 @@ main() {
 
     if (( use_tree_diff )); then
         if (( ${#dl_rel_paths[@]} == 0 )); then
-            ensure_self_update_release_helpers
             [[ -n "$source_record" ]] && write_script_source_ref "$source_record" || true
             green "已是最新版本 (${total_managed} 文件均一致)"
             return 0
@@ -439,7 +419,6 @@ main() {
     fi
 
     if (( ${#changed_files[@]} == 0 )); then
-        ensure_self_update_release_helpers
         [[ -n "$source_record" ]] && write_script_source_ref "$source_record" || true
         green "已是最新版本"
         return 0
@@ -491,7 +470,6 @@ main() {
         systemctl enable --now proxy-watchdog >/dev/null 2>&1 || true
     fi
 
-    ensure_self_update_release_helpers
     [[ -n "$source_record" ]] && write_script_source_ref "$source_record" || true
     if [[ ! -t 0 || ! -t 1 ]]; then
         green "脚本文件已更新到 ${WORK_DIR}"

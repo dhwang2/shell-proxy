@@ -147,7 +147,7 @@ subscription_share_view_fp_file() {
 subscription_share_view_code_fingerprint() {
     local self_fp
     self_fp="$(calc_file_meta_signature "${BASH_SOURCE[0]}" 2>/dev/null || echo "0:0")"
-    printf '%s\n' "$self_fp" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    printf '%s\n' "$self_fp" | proxy_cksum_signature
 }
 
 subscription_share_view_state_fingerprint() {
@@ -165,7 +165,7 @@ subscription_share_view_state_fingerprint() {
     code_fp="$(subscription_share_view_code_fingerprint 2>/dev/null || echo "0:0")"
     printf '%s|%s|%s\n' \
         "$render_fp" "${SHOW_JOIN_CODE:-}" "$code_fp" \
-        | cksum 2>/dev/null | awk '{print $1":"$2}'
+        | proxy_cksum_signature
 }
 
 subscription_share_view_cache_is_fresh() {

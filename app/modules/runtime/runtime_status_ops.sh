@@ -528,13 +528,13 @@ dashboard_static_state_fingerprint() {
 
     conf_fp="$(calc_file_meta_signature "$conf_file" 2>/dev/null || echo "0:0")"
     snell_fp="$(calc_file_meta_signature "$SNELL_CONF" 2>/dev/null || echo "0:0")"
-    shadowtls_fp="$(calc_shadowtls_render_fingerprint 2>/dev/null | cksum 2>/dev/null | awk '{print $1":"$2}')"
+    shadowtls_fp="$(calc_shadowtls_render_fingerprint 2>/dev/null | proxy_cksum_signature)"
     [[ -n "$shadowtls_fp" ]] || shadowtls_fp="0:0"
     source_ref="$(read_script_source_ref 2>/dev/null || true)"
     [[ -n "$source_ref" ]] || source_ref="$(read_proxy_release_tag_cache 2>/dev/null || echo unknown)"
     [[ -n "$source_ref" ]] || source_ref="unknown"
     stack_bucket="$(dashboard_static_stack_bucket)"
-    printf '%s|%s|%s|%s|%s\n' "$conf_fp" "$snell_fp" "$shadowtls_fp" "$source_ref" "$stack_bucket" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    printf '%s|%s|%s|%s|%s\n' "$conf_fp" "$snell_fp" "$shadowtls_fp" "$source_ref" "$stack_bucket" | proxy_cksum_signature
 }
 
 dashboard_static_render_snapshot() {

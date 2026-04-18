@@ -17,12 +17,9 @@ RES_SOCKS_DNS_TAG="res-proxy"
 RES_SOCKS_SECRET_DIR="${WORK_DIR}/secrets"
 RES_SOCKS_NODES_FILE="${RES_SOCKS_SECRET_DIR}/res_socks_nodes.json"
 
-if ! declare -p ROUTING_RES_SOCKS_LABEL_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_RES_SOCKS_LABEL_CACHE=()
-fi
-if ! declare -p ROUTING_RES_SOCKS_COLORED_LABEL_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_RES_SOCKS_COLORED_LABEL_CACHE=()
-fi
+proxy_ensure_assoc_array \
+    ROUTING_RES_SOCKS_LABEL_CACHE \
+    ROUTING_RES_SOCKS_COLORED_LABEL_CACHE
 ROUTING_RES_SOCKS_RUNTIME_CACHE_FP=""
 ROUTING_RES_SOCKS_RUNTIME_COUNT=0
 ROUTING_RES_SOCKS_RUNTIME_FIRST_TAG=""

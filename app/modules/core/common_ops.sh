@@ -267,6 +267,29 @@ if ! declare -F proxy_is_blank_string >/dev/null 2>&1; then
 proxy_is_blank_string() { [[ -z "${1//[[:space:]]/}" ]]; }
 fi
 
+if ! declare -F proxy_cksum_signature >/dev/null 2>&1; then
+proxy_cksum_signature() {
+    cksum 2>/dev/null | awk '{print $1":"$2}'
+}
+fi
+
+if ! declare -F proxy_cksum_cache_key >/dev/null 2>&1; then
+proxy_cksum_cache_key() {
+    cksum 2>/dev/null | awk '{print $1"-"$2}'
+}
+fi
+
+if ! declare -F proxy_ensure_assoc_array >/dev/null 2>&1; then
+proxy_ensure_assoc_array() {
+    local name
+    for name in "$@"; do
+        [[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+        declare -p "$name" 2>/dev/null | grep -q 'declare -A' && continue
+        eval "declare -gA ${name}=()"
+    done
+}
+fi
+
 if ! declare -F gen_rand_alnum >/dev/null 2>&1; then
 gen_rand_alnum() {
     local n="${1:-16}"

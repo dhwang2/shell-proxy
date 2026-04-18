@@ -160,9 +160,9 @@ protocol_menu_cache_state_fingerprint() {
     conf_fp="$(calc_file_fingerprint "$conf_file" 2>/dev/null || echo "0:0")"
     meta_fp="$(calc_file_fingerprint "$USER_META_DB_FILE" 2>/dev/null || echo "0:0")"
     snell_fp="$(calc_file_fingerprint "$SNELL_CONF" 2>/dev/null || echo "0:0")"
-    shadowtls_fp="$(calc_shadowtls_render_fingerprint 2>/dev/null | cksum 2>/dev/null | awk '{print $1":"$2}')"
+    shadowtls_fp="$(calc_shadowtls_render_fingerprint 2>/dev/null | proxy_cksum_signature)"
     [[ -n "$shadowtls_fp" ]] || shadowtls_fp="0:0"
-    printf '%s|%s|%s|%s\n' "$conf_fp" "$meta_fp" "$snell_fp" "$shadowtls_fp" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    printf '%s|%s|%s|%s\n' "$conf_fp" "$meta_fp" "$snell_fp" "$shadowtls_fp" | proxy_cksum_signature
 }
 
 protocol_menu_cache_is_fresh() {
@@ -496,7 +496,7 @@ proxy_protocol_inventory_cache_fingerprint() {
     [[ -z "$conf_file" ]] && conf_file="$(get_conf_file 2>/dev/null || true)"
     conf_fp="$(calc_file_fingerprint "$conf_file" 2>/dev/null || echo "0:0")"
     snell_fp="$(calc_file_fingerprint "$SNELL_CONF" 2>/dev/null || echo "0:0")"
-    printf '%s|%s\n' "$conf_fp" "$snell_fp" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    printf '%s|%s\n' "$conf_fp" "$snell_fp" | proxy_cksum_signature
 }
 
 proxy_protocol_inventory_cache_refresh() {
@@ -557,9 +557,9 @@ proxy_protocol_occupied_ports_cache_refresh() {
     # when called right after proxy_protocol_inventory_cache_refresh.
     [[ -n "$PROXY_PROTOCOL_INVENTORY_CACHE_FP" ]] || proxy_protocol_inventory_cache_refresh "$conf_file"
     inventory_fp="${PROXY_PROTOCOL_INVENTORY_CACHE_FP:-0:0}"
-    shadowtls_fp="$(calc_shadowtls_render_fingerprint | cksum 2>/dev/null | awk '{print $1":"$2}')"
+    shadowtls_fp="$(calc_shadowtls_render_fingerprint | proxy_cksum_signature)"
     [[ -n "$shadowtls_fp" ]] || shadowtls_fp="-"
-    current_fp="$(printf '%s|%s\n' "$inventory_fp" "$shadowtls_fp" | cksum 2>/dev/null | awk '{print $1":"$2}')"
+    current_fp="$(printf '%s|%s\n' "$inventory_fp" "$shadowtls_fp" | proxy_cksum_signature)"
     [[ -n "$current_fp" ]] || current_fp="0:0"
 
     if [[ "$PROXY_PROTOCOL_OCCUPIED_PORTS_CACHE_FP" == "$current_fp" ]]; then

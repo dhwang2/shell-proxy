@@ -29,7 +29,7 @@ proxy_user_membership_meta_fp_cache_file() {
     if declare -F routing_runtime_cache_key >/dev/null 2>&1; then
         cache_key="$(routing_runtime_cache_key "$USER_META_DB_FILE")"
     else
-        cache_key="$(printf '%s' "$USER_META_DB_FILE" | cksum 2>/dev/null | awk '{print $1"-"$2}')"
+        cache_key="$(printf '%s' "$USER_META_DB_FILE" | proxy_cksum_cache_key)"
     fi
     printf '%s\n' "$(routing_runtime_cache_dir)/membership-meta-${cache_key}.cache"
 }
@@ -48,7 +48,7 @@ proxy_user_membership_meta_fingerprint() {
         fi
     fi
 
-    fp="$(jq -c '{name:(.name // {}), disabled:(.disabled // {})}' "$USER_META_DB_FILE" 2>/dev/null | cksum 2>/dev/null | awk '{print $1":"$2}')"
+    fp="$(jq -c '{name:(.name // {}), disabled:(.disabled // {})}' "$USER_META_DB_FILE" 2>/dev/null | proxy_cksum_signature)"
     [[ -n "$fp" ]] || fp="0:0"
     if [[ -n "$cache_file" ]]; then
         mkdir -p "$(routing_runtime_cache_dir)" >/dev/null 2>&1 || true
@@ -63,7 +63,7 @@ proxy_user_membership_state_fp_cache_file() {
     if declare -F routing_runtime_cache_key >/dev/null 2>&1; then
         cache_key="$(routing_runtime_cache_key "$raw_key")"
     else
-        cache_key="$(printf '%s' "$raw_key" | cksum 2>/dev/null | awk '{print $1"-"$2}')"
+        cache_key="$(printf '%s' "$raw_key" | proxy_cksum_cache_key)"
     fi
     printf '%s\n' "$(routing_runtime_cache_dir)/membership-state-${cache_key}.cache"
 }
@@ -106,7 +106,7 @@ proxy_user_membership_cache_fingerprint() {
     if declare -F calc_singbox_inbounds_fingerprint >/dev/null 2>&1; then
         conf_fp="$(calc_singbox_inbounds_fingerprint "$conf_file" 2>/dev/null || echo 0:0)"
     else
-        conf_fp="$(jq -c '.inbounds // []' "$conf_file" 2>/dev/null | cksum 2>/dev/null | awk '{print $1":"$2}')"
+        conf_fp="$(jq -c '.inbounds // []' "$conf_file" 2>/dev/null | proxy_cksum_signature)"
     fi
     meta_fp="$(proxy_user_membership_meta_fingerprint 2>/dev/null || echo 0:0)"
     [[ -n "$conf_fp" ]] || conf_fp="0:0"

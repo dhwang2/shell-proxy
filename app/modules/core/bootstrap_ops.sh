@@ -273,7 +273,7 @@ proxy_runtime_cache_dir() {
 
 proxy_runtime_cache_key() {
     local raw="${1:-}"
-    printf '%s' "$raw" | cksum 2>/dev/null | awk '{print $1"-"$2}'
+    printf '%s' "$raw" | proxy_cksum_cache_key
 }
 
 proxy_runtime_cache_file() {

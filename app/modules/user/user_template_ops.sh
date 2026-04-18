@@ -18,12 +18,9 @@ if [[ -f "$USER_TEMPLATE_ROUTING_CORE_OPS_FILE" ]]; then
     source "$USER_TEMPLATE_ROUTING_CORE_OPS_FILE"
 fi
 
-if ! declare -p PROXY_USER_TEMPLATE_NAME_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA PROXY_USER_TEMPLATE_NAME_CACHE=()
-fi
-if ! declare -p PROXY_USER_TEMPLATE_RULES_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA PROXY_USER_TEMPLATE_RULES_CACHE=()
-fi
+proxy_ensure_assoc_array \
+    PROXY_USER_TEMPLATE_NAME_CACHE \
+    PROXY_USER_TEMPLATE_RULES_CACHE
 PROXY_USER_TEMPLATE_VALUE_CACHE_FP="${PROXY_USER_TEMPLATE_VALUE_CACHE_FP:-}"
 
 proxy_user_template_runtime_cache_dir() {
@@ -58,7 +55,7 @@ proxy_user_template_value_cache_file_for_fp() {
     if declare -F routing_runtime_cache_key >/dev/null 2>&1; then
         cache_key="$(routing_runtime_cache_key "$fp")"
     else
-        cache_key="$(printf '%s' "$fp" | cksum 2>/dev/null | awk '{print $1"-"$2}')"
+        cache_key="$(printf '%s' "$fp" | proxy_cksum_cache_key)"
     fi
     printf '%s\n' "$(proxy_user_template_runtime_cache_dir)/value-${cache_key}.cache"
 }

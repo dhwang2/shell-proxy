@@ -78,15 +78,10 @@ DEFAULT_PROXY_USER_NAME="${DEFAULT_PROXY_USER_NAME:-user}"
 USER_META_DB_FILE="${WORK_DIR}/user-management.json"
 USER_ROUTE_RULES_DB_FILE="${WORK_DIR}/user-route-rules.json"
 USER_TEMPLATE_DB_FILE="${WORK_DIR}/user-route-templates.json"
-if ! declare -p SUBSCRIPTION_IP_DETECT_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA SUBSCRIPTION_IP_DETECT_CACHE=()
-fi
-if ! declare -p SUBSCRIPTION_DOMAIN_RESOLVE_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA SUBSCRIPTION_DOMAIN_RESOLVE_CACHE=()
-fi
-if ! declare -p REALITY_PUBLIC_KEY_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA REALITY_PUBLIC_KEY_CACHE=()
-fi
+proxy_ensure_assoc_array \
+    SUBSCRIPTION_IP_DETECT_CACHE \
+    SUBSCRIPTION_DOMAIN_RESOLVE_CACHE \
+    REALITY_PUBLIC_KEY_CACHE
 SUBSCRIPTION_RENDER_CONTEXT_ACTIVE=0
 SUBSCRIPTION_RENDER_CONTEXT_HOST=""
 SUBSCRIPTION_RENDER_CONTEXT_CONF=""
@@ -123,35 +118,21 @@ PROXY_PROTOCOL_OCCUPIED_PORTS_CACHE_FP=""
 PROXY_PROTOCOL_OCCUPIED_PORTS_CACHE=""
 ROUTING_USER_CONTEXT_ACTIVE=0
 ROUTING_USER_CONTEXT_NAME=""
-if ! declare -p PROXY_USER_META_NAME_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA PROXY_USER_META_NAME_CACHE=()
-fi
-if ! declare -p PROXY_USER_META_TEMPLATE_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA PROXY_USER_META_TEMPLATE_CACHE=()
-fi
-if ! declare -p PROXY_USER_META_EXPIRY_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA PROXY_USER_META_EXPIRY_CACHE=()
-fi
+proxy_ensure_assoc_array \
+    PROXY_USER_META_NAME_CACHE \
+    PROXY_USER_META_TEMPLATE_CACHE \
+    PROXY_USER_META_EXPIRY_CACHE
 ROUTING_USER_RUNTIME_CACHE_FP=""
 ROUTING_USER_RUNTIME_INPUT_FP=""
 ROUTING_USER_RUNTIME_INPUT_SOURCE_KEY=""
 ROUTING_USER_RUNTIME_INPUT_CACHED_FP=""
 ROUTING_IPV6_STACK_CACHE=""
-if ! declare -p ROUTING_USER_BINDABLE_KEYS_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_USER_BINDABLE_KEYS_CACHE=()
-fi
-if ! declare -p ROUTING_USER_TEMPLATE_IDS_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_USER_TEMPLATE_IDS_CACHE=()
-fi
-if ! declare -p ROUTING_USER_STATE_JSON_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_USER_STATE_JSON_CACHE=()
-fi
-if ! declare -p ROUTING_USER_RULE_COUNT_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_USER_RULE_COUNT_CACHE=()
-fi
-if ! declare -p ROUTING_USER_TEMPLATE_MODE_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_USER_TEMPLATE_MODE_CACHE=()
-fi
+proxy_ensure_assoc_array \
+    ROUTING_USER_BINDABLE_KEYS_CACHE \
+    ROUTING_USER_TEMPLATE_IDS_CACHE \
+    ROUTING_USER_STATE_JSON_CACHE \
+    ROUTING_USER_RULE_COUNT_CACHE \
+    ROUTING_USER_TEMPLATE_MODE_CACHE
 
 is_feature_enabled() {
     local value="${1:-off}"
@@ -486,7 +467,7 @@ calc_singbox_inbounds_fingerprint() {
         ' "$conf_file" 2>/dev/null
     )"
     if [[ -n "$inbounds_text" ]]; then
-        fp="$(printf '%s' "$inbounds_text" | cksum 2>/dev/null | awk '{print $1":"$2}')"
+        fp="$(printf '%s' "$inbounds_text" | proxy_cksum_signature)"
         if [[ -n "$fp" ]]; then
             proxy_runtime_state_write_value "$cache_file" "$conf_fp" "$fp" >/dev/null 2>&1 || true
             echo "$fp"
@@ -494,7 +475,7 @@ calc_singbox_inbounds_fingerprint() {
         fi
     fi
 
-    fp="$(jq -c '.inbounds // []' "$conf_file" 2>/dev/null | cksum 2>/dev/null | awk '{print $1":"$2}')"
+    fp="$(jq -c '.inbounds // []' "$conf_file" 2>/dev/null | proxy_cksum_signature)"
     [[ -n "$fp" ]] || fp="0:0"
     proxy_runtime_state_write_value "$cache_file" "$conf_fp" "$fp" >/dev/null 2>&1 || true
     echo "$fp"
@@ -510,9 +491,7 @@ calc_user_meta_name_fingerprint() {
         echo "$cached_fp"
         return 0
     fi
-    fp="$(jq -c '.name // {}' "$USER_META_DB_FILE" 2>/dev/null \
-        | cksum 2>/dev/null \
-        | awk '{print $1":"$2}')"
+    fp="$(jq -c '.name // {}' "$USER_META_DB_FILE" 2>/dev/null | proxy_cksum_signature)"
     [[ -n "$fp" ]] || fp="0:0"
     proxy_runtime_state_write_value "$cache_file" "$meta_fp" "$fp" >/dev/null 2>&1 || true
     echo "$fp"
@@ -591,7 +570,7 @@ routing_runtime_cache_dir() {
 
 routing_runtime_cache_key() {
     local raw="${1:-}"
-    printf '%s' "$raw" | cksum 2>/dev/null | awk '{print $1"-"$2}'
+    printf '%s' "$raw" | proxy_cksum_cache_key
 }
 
 proxy_user_membership_cache_file_for_fp() {

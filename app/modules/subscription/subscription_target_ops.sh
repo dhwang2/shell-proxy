@@ -118,12 +118,7 @@ is_shareable_ipv6_literal() {
 }
 
 ensure_subscription_target_cache_maps() {
-    if ! declare -p SUBSCRIPTION_IP_DETECT_CACHE 2>/dev/null | grep -q 'declare -A'; then
-        declare -gA SUBSCRIPTION_IP_DETECT_CACHE=()
-    fi
-    if ! declare -p SUBSCRIPTION_DOMAIN_RESOLVE_CACHE 2>/dev/null | grep -q 'declare -A'; then
-        declare -gA SUBSCRIPTION_DOMAIN_RESOLVE_CACHE=()
-    fi
+    proxy_ensure_assoc_array SUBSCRIPTION_IP_DETECT_CACHE SUBSCRIPTION_DOMAIN_RESOLVE_CACHE
     SUBSCRIPTION_TARGET_CACHE_INIT=1
 }
 
@@ -144,7 +139,7 @@ subscription_target_cache_ttl_seconds() {
 subscription_target_cache_file() {
     local cache_key="${1:-}" cache_id
     [[ -n "$cache_key" ]] || return 1
-    cache_id="$(printf '%s' "$cache_key" | cksum 2>/dev/null | awk '{print $1"-"$2}')"
+    cache_id="$(printf '%s' "$cache_key" | proxy_cksum_cache_key)"
     [[ -n "$cache_id" ]] || return 1
     printf '%s/.%s.cache\n' "$(subscription_target_cache_dir)" "$cache_id"
 }

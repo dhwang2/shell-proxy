@@ -29,7 +29,7 @@ routing_test_effect_cache_key() {
         routing_runtime_cache_key "$raw_key"
         return 0
     fi
-    printf '%s' "$raw_key" | cksum 2>/dev/null | awk '{print $1"-"$2}'
+    printf '%s' "$raw_key" | proxy_cksum_cache_key
 }
 
 routing_test_effect_cache_text_file() {
@@ -58,17 +58,17 @@ routing_test_effect_state_fingerprint() {
     if routing_context_is_user; then
         source_fp="$(routing_user_runtime_input_fingerprint "$conf_file" 2>/dev/null || echo "0:0|0:0|0:0|0:0")"
         state_fp="$(printf '%s|%s|%s\n' "${ROUTING_USER_CONTEXT_NAME:-}" "$source_fp" "$nodes_meta" \
-            | cksum 2>/dev/null | awk '{print $1":"$2}')"
+            | proxy_cksum_signature)"
     else
         source_fp="$(printf '%s|%s|%s\n' \
             "$(calc_file_meta_signature "$ROUTING_RULES_DB" 2>/dev/null || echo "0:0")" \
             "$(calc_file_meta_signature "$DIRECT_IP_VERSION_FILE" 2>/dev/null || echo "0:0")" \
             "$nodes_meta")"
-        state_fp="$(printf '%s' "$source_fp" | cksum 2>/dev/null | awk '{print $1":"$2}')"
+        state_fp="$(printf '%s' "$source_fp" | proxy_cksum_signature)"
     fi
 
     printf '%s|%s|%s|%s\n' "$context_scope" "$state_fp" "$bucket" "$code_fp" \
-        | cksum 2>/dev/null | awk '{print $1":"$2}'
+        | proxy_cksum_signature
 }
 
 routing_test_effect_cache_read_fingerprint() {

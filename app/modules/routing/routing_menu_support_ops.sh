@@ -105,7 +105,7 @@ routing_menu_view_cache_key() {
         proxy_runtime_cache_key "$cache_raw"
         return 0
     fi
-    printf '%s' "$cache_raw" | cksum 2>/dev/null | awk '{print $1"-"$2}'
+    printf '%s' "$cache_raw" | proxy_cksum_cache_key
 }
 
 routing_menu_view_text_file() {
@@ -129,7 +129,7 @@ routing_menu_view_state_fingerprint() {
     status_fp="$(routing_status_cache_read_fingerprint "$conf_file" 2>/dev/null || true)"
     [[ -n "$status_fp" ]] || status_fp="0:0"
     code_fp="$(routing_menu_view_code_fingerprint 2>/dev/null || echo "0:0")"
-    printf '%s|%s\n' "$status_fp" "$code_fp" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    printf '%s|%s\n' "$status_fp" "$code_fp" | proxy_cksum_signature
 }
 
 routing_menu_view_cache_recent_enough() {

@@ -12,24 +12,13 @@ if [[ -f "$SHARE_LINK_OPS_FILE" ]]; then
     source "$SHARE_LINK_OPS_FILE"
 fi
 
-if ! declare -p PROXY_USER_META_NAME_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA PROXY_USER_META_NAME_CACHE=()
-fi
-if ! declare -p PROXY_USER_META_TEMPLATE_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA PROXY_USER_META_TEMPLATE_CACHE=()
-fi
-if ! declare -p PROXY_USER_META_EXPIRY_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA PROXY_USER_META_EXPIRY_CACHE=()
-fi
-if ! declare -p PROXY_USER_NORMALIZED_NAME_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA PROXY_USER_NORMALIZED_NAME_CACHE=()
-fi
-if ! declare -p PROXY_USER_SHARE_SUFFIX_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA PROXY_USER_SHARE_SUFFIX_CACHE=()
-fi
-if ! declare -p PROXY_USER_LINK_NAME_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA PROXY_USER_LINK_NAME_CACHE=()
-fi
+proxy_ensure_assoc_array \
+    PROXY_USER_META_NAME_CACHE \
+    PROXY_USER_META_TEMPLATE_CACHE \
+    PROXY_USER_META_EXPIRY_CACHE \
+    PROXY_USER_NORMALIZED_NAME_CACHE \
+    PROXY_USER_SHARE_SUFFIX_CACHE \
+    PROXY_USER_LINK_NAME_CACHE
 PROXY_USER_DISPLAY_NAME_CACHE_FP="${PROXY_USER_DISPLAY_NAME_CACHE_FP:-}"
 
 proxy_user_meta_cache_dir() {
@@ -162,7 +151,7 @@ proxy_user_meta_value_cache_file_for_fp() {
     if declare -F routing_runtime_cache_key >/dev/null 2>&1; then
         cache_key="$(routing_runtime_cache_key "$fp")"
     else
-        cache_key="$(printf '%s' "$fp" | cksum 2>/dev/null | awk '{print $1"-"$2}')"
+        cache_key="$(printf '%s' "$fp" | proxy_cksum_cache_key)"
     fi
     printf '%s\n' "${cache_dir}/value-${cache_key}.cache"
 }

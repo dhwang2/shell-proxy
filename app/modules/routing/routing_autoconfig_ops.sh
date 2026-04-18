@@ -55,7 +55,7 @@ singbox_autoconfig_state_fingerprint() {
     printf '%s|%s|%s|%s|%s|%s|%s|%s|%s\n' \
         "$conf_fp" "$direct_fp" "$routing_fp" "$user_meta_fp" "$user_route_fp" "$user_template_fp" \
         "$res_nodes_fp" "$snell_fp" "$source_ref" \
-        | cksum 2>/dev/null | awk '{print $1":"$2}'
+        | proxy_cksum_signature
 }
 
 singbox_autoconfig_state_is_fresh() {
@@ -256,9 +256,9 @@ ensure_singbox_auto_config() {
         sync_res_socks_outbounds_to_conf "$conf_file" || true
         local reconcile_state pre_fingerprint post_fingerprint
         reconcile_state="$(routing_load_state_json 2>/dev/null || echo "[]")"
-        pre_fingerprint="$(cksum "$conf_file" 2>/dev/null | awk '{print $1":"$2}')"
+        pre_fingerprint="$(proxy_cksum_signature <"$conf_file")"
         if routing_apply_rules_change "$conf_file" "$reconcile_state" "$reconcile_state"; then
-            post_fingerprint="$(cksum "$conf_file" 2>/dev/null | awk '{print $1":"$2}')"
+            post_fingerprint="$(proxy_cksum_signature <"$conf_file")"
             if [[ -n "$pre_fingerprint" && -n "$post_fingerprint" && "$pre_fingerprint" != "$post_fingerprint" ]]; then
                 yellow "已按当前分流状态同步 route/dns 规则。"
                 systemctl reset-failed sing-box >/dev/null 2>&1 || true

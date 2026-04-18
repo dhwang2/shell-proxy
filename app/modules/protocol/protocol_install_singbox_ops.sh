@@ -299,11 +299,7 @@ modify_singbox_inbounds_logic() {
             if ! protocol_install_session_active; then
                 (( route_sync_required == 1 )) && sync_user_template_route_rules "$conf_file" >/dev/null 2>&1 || true
             fi
-            if protocol_install_session_active; then
-                protocol_install_apply_singbox_change
-            else
-                protocol_install_apply_singbox_change
-            fi
+            protocol_install_apply_singbox_change
             green "✓ 协议安装成功!"
             return 0
         }
@@ -820,19 +816,9 @@ protocol_install_session_flush_now() {
     return 0
 }
 
-protocol_install_session_flush() {
-    if ! protocol_install_session_has_pending_changes; then
-        return 1
-    fi
-
-    # flush_now uses proxy_run_with_spinner_fg which runs the spinner in a
-    # background process and work in the foreground, preserving variable state.
-    protocol_install_session_flush_now
-}
-
 protocol_install_session_end() {
     local flushed=1
-    protocol_install_session_flush || flushed=$?
+    protocol_install_session_flush_now || flushed=$?
     PROTOCOL_INSTALL_SESSION_ACTIVE=0
     if [[ -n "${PROTOCOL_INSTALL_SESSION_DIR:-}" && -d "${PROTOCOL_INSTALL_SESSION_DIR:-}" ]]; then
         rm -rf "${PROTOCOL_INSTALL_SESSION_DIR}" >/dev/null 2>&1 || true

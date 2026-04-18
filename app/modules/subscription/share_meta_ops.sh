@@ -49,18 +49,18 @@ calc_share_host_source_fingerprint() {
 
     if [[ -f "$domain_file" ]]; then
         domain_fp="$(calc_file_meta_signature "$domain_file" 2>/dev/null || echo "0:0")"
-        printf 'domain|%s\n' "$domain_fp" | cksum 2>/dev/null | awk '{print $1":"$2}'
+        printf 'domain|%s\n' "$domain_fp" | proxy_cksum_signature
         return 0
     fi
 
     if [[ -n "$conf_file" && -f "$conf_file" ]]; then
         conf_fp="$(calc_file_meta_signature "$conf_file" 2>/dev/null || echo "0:0")"
-        printf 'conf|%s\n' "$conf_fp" | cksum 2>/dev/null | awk '{print $1":"$2}'
+        printf 'conf|%s\n' "$conf_fp" | proxy_cksum_signature
         return 0
     fi
 
     bucket="$(share_host_cache_bucket)"
-    printf 'fallback|%s\n' "$bucket" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    printf 'fallback|%s\n' "$bucket" | proxy_cksum_signature
 }
 
 detect_share_host_uncached() {

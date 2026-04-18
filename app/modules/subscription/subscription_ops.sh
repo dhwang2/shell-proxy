@@ -255,7 +255,7 @@ subscription/subscription_ops.sh
 subscription/share_ops.sh
 user/user_meta_ops.sh
 EOF
-    printf '%s' "$rows" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    printf '%s' "$rows" | proxy_cksum_signature
 }
 
 calc_subscription_render_fingerprint() {
@@ -266,24 +266,24 @@ calc_subscription_render_fingerprint() {
     # Use inbounds-only fingerprint so routing-rule changes (route.rules/dns)
     # do not invalidate the subscription cache.  Subscription links depend only
     # on inbound protocol state, not on routing configuration.
-    conf_fp="$(jq -c '.inbounds // []' "$conf_file" 2>/dev/null | cksum 2>/dev/null | awk '{print $1":"$2}' || echo "-")"
+    conf_fp="$(jq -c '.inbounds // []' "$conf_file" 2>/dev/null | proxy_cksum_signature || echo "-")"
     snell_fp="$(calc_file_meta_signature "$SNELL_CONF" 2>/dev/null || echo "-")"
     # Exclude .template from user-meta fingerprint: template bindings are
     # routing state, irrelevant to subscription link generation.
-    user_meta_fp="$(jq -c 'del(.template)' "$USER_META_DB_FILE" 2>/dev/null | cksum 2>/dev/null | awk '{print $1":"$2}' || echo "-")"
+    user_meta_fp="$(jq -c 'del(.template)' "$USER_META_DB_FILE" 2>/dev/null | proxy_cksum_signature || echo "-")"
     script_fp="$(calc_subscription_render_code_fingerprint 2>/dev/null || echo "-")"
     if surge_link_verbose_params_enabled; then
         verbose_flag="on"
     else
         verbose_flag="off"
     fi
-    shadowtls_fp="$(calc_shadowtls_render_fingerprint | cksum 2>/dev/null | awk '{print $1":"$2}')"
+    shadowtls_fp="$(calc_shadowtls_render_fingerprint | proxy_cksum_signature)"
     [[ -n "$shadowtls_fp" ]] || shadowtls_fp="-"
 
     printf 'schema=%s\nhost=%s\nnode=%s\nconf=%s\nsnell=%s\nuser_meta=%s\nscript=%s\nshadowtls=%s\nsurge_verbose=%s\n' \
         "subscription-render-v3" \
         "$host" "$node_name" "$conf_fp" "$snell_fp" "$user_meta_fp" "$script_fp" "$shadowtls_fp" "$verbose_flag" \
-        | cksum 2>/dev/null | awk '{print $1":"$2}'
+        | proxy_cksum_signature
 }
 
 sync_singbox_loaded_fingerprint() {

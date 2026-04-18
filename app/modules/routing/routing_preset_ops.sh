@@ -20,9 +20,7 @@ fi
 
 ROUTING_PRESET_FIELD_SEP=$'\x1f'
 
-if ! declare -p ROUTING_BUILD_RULES_RESULT_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_BUILD_RULES_RESULT_CACHE=()
-fi
+proxy_ensure_assoc_array ROUTING_BUILD_RULES_RESULT_CACHE
 ROUTING_BUILD_RULES_RESULT_CACHE_FP="${ROUTING_BUILD_RULES_RESULT_CACHE_FP:-}"
 
 routing_build_rules_cache_dir() {
@@ -41,7 +39,7 @@ routing_build_rules_cache_write_atomic() {
 routing_build_rules_cache_file_for_key() {
     local prefix="${1:-}" raw_key="${2:-}" cache_key
     [[ -n "$prefix" ]] || return 1
-    cache_key="$(printf '%s' "${prefix}|${raw_key}" | cksum 2>/dev/null | awk '{print $1"-"$2}')"
+    cache_key="$(printf '%s' "${prefix}|${raw_key}" | proxy_cksum_cache_key)"
     printf '%s\n' "$(routing_build_rules_cache_dir)/${prefix}-${cache_key}.cache"
 }
 
@@ -78,7 +76,7 @@ routing_conf_ruleset_fingerprint() {
     local conf_file="${1:-}" tag_lines
     [[ -n "$conf_file" && -f "$conf_file" ]] || { echo "0:0"; return 0; }
     tag_lines="$(routing_collect_conf_ruleset_tag_lines "$conf_file" 2>/dev/null || true)"
-    printf '%s' "$tag_lines" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    printf '%s' "$tag_lines" | proxy_cksum_signature
 }
 
 routing_build_rules_cache_refresh_if_needed() {
@@ -94,7 +92,7 @@ routing_build_rules_cache_refresh_if_needed() {
 
 routing_state_json_fingerprint() {
     local state_json="${1:-[]}"
-    printf '%s' "$state_json" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    printf '%s' "$state_json" | proxy_cksum_signature
 }
 
 routing_trim_token() {

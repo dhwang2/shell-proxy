@@ -30,24 +30,13 @@ if [[ -f "$USER_TEMPLATE_OPS_FILE" ]]; then
     source "$USER_TEMPLATE_OPS_FILE"
 fi
 
-if ! declare -p ROUTING_TEMPLATE_COMPILED_RULES_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_TEMPLATE_COMPILED_RULES_CACHE=()
-fi
-if ! declare -p ROUTING_TEMPLATE_COMPILED_FP_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_TEMPLATE_COMPILED_FP_CACHE=()
-fi
-if ! declare -p ROUTING_USER_TEMPLATE_ROUTE_SYNC_INPUT_FP_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_USER_TEMPLATE_ROUTE_SYNC_INPUT_FP_CACHE=()
-fi
-if ! declare -p ROUTING_USER_TEMPLATE_ROUTE_CONF_MANAGED_FP_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_USER_TEMPLATE_ROUTE_CONF_MANAGED_FP_CACHE=()
-fi
-if ! declare -p ROUTING_USER_TEMPLATE_ROUTE_COMPILED_RULES_JSON_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_USER_TEMPLATE_ROUTE_COMPILED_RULES_JSON_CACHE=()
-fi
-if ! declare -p ROUTING_USER_TEMPLATE_ROUTE_DB_JSON_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_USER_TEMPLATE_ROUTE_DB_JSON_CACHE=()
-fi
+proxy_ensure_assoc_array \
+    ROUTING_TEMPLATE_COMPILED_RULES_CACHE \
+    ROUTING_TEMPLATE_COMPILED_FP_CACHE \
+    ROUTING_USER_TEMPLATE_ROUTE_SYNC_INPUT_FP_CACHE \
+    ROUTING_USER_TEMPLATE_ROUTE_CONF_MANAGED_FP_CACHE \
+    ROUTING_USER_TEMPLATE_ROUTE_COMPILED_RULES_JSON_CACHE \
+    ROUTING_USER_TEMPLATE_ROUTE_DB_JSON_CACHE
 
 ROUTING_USER_TEMPLATE_ROUTE_CACHE_DIR="${CACHE_DIR}/routing/user-route-sync"
 ROUTING_USER_TEMPLATE_ROUTE_META_SEP=$'\x1f'
@@ -487,7 +476,7 @@ routing_managed_rules_dns_shape_fingerprint() {
             ((.domain_regex // []) | if type == "array" then join(",") else "" end)
         )
     ' <<<"${rules_json:-[]}" 2>/dev/null || echo "[]")"
-    printf '%s' "$normalized" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    printf '%s' "$normalized" | proxy_cksum_signature
 }
 
 routing_user_template_route_cache_dir() {
@@ -502,7 +491,7 @@ routing_user_template_route_compiled_cache_key() {
         routing_runtime_cache_key "compiled-user|${target_name}"
         return 0
     fi
-    printf '%s' "compiled-user|${target_name}" | cksum 2>/dev/null | awk '{print $1"-"$2}'
+    printf '%s' "compiled-user|${target_name}" | proxy_cksum_cache_key
 }
 
 routing_user_template_route_compiled_input_fp_file() {
@@ -588,38 +577,34 @@ routing_user_template_route_template_map_mark_fresh() {
     routing_user_template_route_cache_write_atomic "$(routing_user_template_route_template_map_state_file)" "$current_fp"
 }
 
-routing_user_template_route_code_fingerprint() {
-    local module_rel module_path fp rows=""
-    while IFS= read -r module_rel; do
-        [[ -n "$module_rel" ]] || continue
-        module_path="${MODULE_DIR}/${module_rel}"
-        fp="$(calc_file_fingerprint "$module_path" 2>/dev/null || calc_file_fingerprint "${WORK_DIR}/modules/${module_rel}" 2>/dev/null || echo "-")"
-        rows+="${module_rel}=${fp}"$'\n'
-    done <<'EOF'
+_routing_user_template_route_code_modules() {
+    cat <<'EOF'
 user/user_route_ops.sh
 routing/routing_preset_ops.sh
 routing/routing_core_ops.sh
 user/user_meta_ops.sh
 user/user_template_ops.sh
 EOF
-    printf '%s' "$rows" | cksum 2>/dev/null | awk '{print $1":"$2}'
+}
+
+_routing_user_template_route_code_signature() {
+    local calc_fn="${1:-calc_file_fingerprint}"
+    local module_rel module_path sig rows=""
+    while IFS= read -r module_rel; do
+        [[ -n "$module_rel" ]] || continue
+        module_path="${MODULE_DIR}/${module_rel}"
+        sig="$("$calc_fn" "$module_path" 2>/dev/null || "$calc_fn" "${WORK_DIR}/modules/${module_rel}" 2>/dev/null || echo "-")"
+        rows+="${module_rel}=${sig}"$'\n'
+    done < <(_routing_user_template_route_code_modules)
+    printf '%s' "$rows" | proxy_cksum_signature
+}
+
+routing_user_template_route_code_fingerprint() {
+    _routing_user_template_route_code_signature calc_file_fingerprint
 }
 
 routing_user_template_route_code_meta_signature() {
-    local module_rel module_path meta_sig rows=""
-    while IFS= read -r module_rel; do
-        [[ -n "$module_rel" ]] || continue
-        module_path="${MODULE_DIR}/${module_rel}"
-        meta_sig="$(calc_file_meta_signature "$module_path" 2>/dev/null || calc_file_meta_signature "${WORK_DIR}/modules/${module_rel}" 2>/dev/null || echo "-")"
-        rows+="${module_rel}=${meta_sig}"$'\n'
-    done <<'EOF'
-user/user_route_ops.sh
-routing/routing_preset_ops.sh
-routing/routing_core_ops.sh
-user/user_meta_ops.sh
-user/user_template_ops.sh
-EOF
-    printf '%s' "$rows" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    _routing_user_template_route_code_signature calc_file_meta_signature
 }
 
 routing_user_template_route_fast_state_key() {
@@ -662,7 +647,7 @@ routing_user_template_route_sync_input_fingerprint() {
     # conf_file (route.rules/dns rewrites) do not invalidate the sync cache.
     # Route sync only depends on inbound user/protocol state, not on the
     # routing rules themselves which are rebuilt from templates.
-    conf_fp="$(jq -c '.inbounds // []' "$conf_file" 2>/dev/null | cksum 2>/dev/null | awk '{print $1":"$2}' || echo "0:0")"
+    conf_fp="$(jq -c '.inbounds // []' "$conf_file" 2>/dev/null | proxy_cksum_signature || echo "0:0")"
     user_meta_fp="$(calc_file_fingerprint "$USER_META_DB_FILE" 2>/dev/null || echo "0:0")"
     user_template_fp="$(calc_file_fingerprint "$USER_TEMPLATE_DB_FILE" 2>/dev/null || echo "0:0")"
     code_fp="$(routing_user_template_route_code_fingerprint 2>/dev/null || echo "0:0")"
@@ -684,20 +669,20 @@ routing_user_template_route_sync_input_fingerprint() {
     if declare -F calc_singbox_inbounds_fingerprint >/dev/null 2>&1; then
         inbounds_fp="$(calc_singbox_inbounds_fingerprint "$conf_file" 2>/dev/null || echo "0:0")"
     else
-        inbounds_fp="$(jq -c '.inbounds // []' "$conf_file" 2>/dev/null | cksum 2>/dev/null | awk '{print $1":"$2}')"
+        inbounds_fp="$(jq -c '.inbounds // []' "$conf_file" 2>/dev/null | proxy_cksum_signature)"
     fi
 
     if declare -F routing_conf_ruleset_fingerprint >/dev/null 2>&1; then
         ruleset_fp="$(routing_conf_ruleset_fingerprint "$conf_file" 2>/dev/null || echo "0:0")"
     else
-        ruleset_fp="$(jq -r '.route.rule_set[]?.tag // empty' "$conf_file" 2>/dev/null | sort | cksum 2>/dev/null | awk '{print $1":"$2}')"
+        ruleset_fp="$(jq -r '.route.rule_set[]?.tag // empty' "$conf_file" 2>/dev/null | sort | proxy_cksum_signature)"
     fi
     [[ -n "$ruleset_fp" ]] || ruleset_fp="0:0"
 
     result_fp="$(printf 'schema=%s\ninbounds=%s\nruleset=%s\nmeta=%s\ntemplate=%s\ncode=%s\n' \
         "user-route-sync-v5" \
         "$inbounds_fp" "$ruleset_fp" "$user_meta_fp" "$user_template_fp" "$code_fp" \
-        | cksum 2>/dev/null | awk '{print $1":"$2}')"
+        | proxy_cksum_signature)"
     ROUTING_USER_TEMPLATE_ROUTE_SYNC_INPUT_FP_CACHE["$cache_key"]="$result_fp"
     routing_user_template_route_cache_write_atomic \
         "$meta_file" \
@@ -814,19 +799,19 @@ routing_user_template_route_user_input_fingerprint() {
     if declare -F routing_conf_ruleset_fingerprint >/dev/null 2>&1; then
         ruleset_fp="$(routing_conf_ruleset_fingerprint "$conf_file" 2>/dev/null || echo "0:0")"
     else
-        ruleset_fp="$(jq -r '.route.rule_set[]?.tag // empty' "$conf_file" 2>/dev/null | sort | cksum 2>/dev/null | awk '{print $1":"$2}')"
+        ruleset_fp="$(jq -r '.route.rule_set[]?.tag // empty' "$conf_file" 2>/dev/null | sort | proxy_cksum_signature)"
     fi
     [[ -n "$ruleset_fp" ]] || ruleset_fp="0:0"
 
     if declare -F routing_state_json_fingerprint >/dev/null 2>&1; then
-        state_fp="$(routing_state_json_fingerprint "$state_json" 2>/dev/null || printf '%s' "$state_json" | cksum 2>/dev/null | awk '{print $1":"$2}')"
+        state_fp="$(routing_state_json_fingerprint "$state_json" 2>/dev/null || printf '%s' "$state_json" | proxy_cksum_signature)"
     else
-        state_fp="$(printf '%s' "$state_json" | cksum 2>/dev/null | awk '{print $1":"$2}')"
+        state_fp="$(printf '%s' "$state_json" | proxy_cksum_signature)"
     fi
     [[ -n "$state_fp" ]] || state_fp="0:0"
 
     code_fp="$(routing_user_template_route_code_fingerprint 2>/dev/null || echo "0:0")"
-    printf '%s|%s|%s|%s\n' "$target_name" "$ruleset_fp" "$state_fp" "$code_fp" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    printf '%s|%s|%s|%s\n' "$target_name" "$ruleset_fp" "$state_fp" "$code_fp" | proxy_cksum_signature
 }
 
 routing_user_template_rules_fingerprint() {
@@ -862,7 +847,7 @@ routing_user_template_rules_fingerprint() {
         | unique
         | sort
     ' <<<"${rules_json:-[]}" 2>/dev/null || echo "[]")"
-    printf '%s' "$normalized" | cksum 2>/dev/null | awk '{print $1":"$2}'
+    printf '%s' "$normalized" | proxy_cksum_signature
 }
 
 routing_user_template_conf_managed_rules_fingerprint() {
@@ -917,7 +902,7 @@ routing_user_template_conf_managed_rules_fingerprint() {
         | unique
         | sort
     ' "$conf_file" 2>/dev/null || echo "[]")"
-    rules_fp="$(printf '%s' "$normalized" | cksum 2>/dev/null | awk '{print $1":"$2}')"
+    rules_fp="$(printf '%s' "$normalized" | proxy_cksum_signature)"
     [[ -n "$rules_fp" ]] || rules_fp="0:0"
     ROUTING_USER_TEMPLATE_ROUTE_CONF_MANAGED_FP_CACHE["$conf_file_fp"]="$rules_fp"
     routing_user_template_route_cache_write_atomic \

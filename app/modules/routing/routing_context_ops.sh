@@ -6,12 +6,9 @@ if [[ -f "$COMMON_OPS_FILE" ]]; then
     source "$COMMON_OPS_FILE"
 fi
 
-if ! declare -p ROUTING_STATUS_STATE_FP_META_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_STATUS_STATE_FP_META_CACHE=()
-fi
-if ! declare -p ROUTING_STATUS_STATE_FP_VALUE_CACHE 2>/dev/null | grep -q 'declare -A'; then
-    declare -gA ROUTING_STATUS_STATE_FP_VALUE_CACHE=()
-fi
+proxy_ensure_assoc_array \
+    ROUTING_STATUS_STATE_FP_META_CACHE \
+    ROUTING_STATUS_STATE_FP_VALUE_CACHE
 
 ROUTING_STATUS_CACHE_TTL_SECONDS="${ROUTING_STATUS_CACHE_TTL_SECONDS:-2}"
 
@@ -105,7 +102,7 @@ routing_status_cache_key() {
         proxy_runtime_cache_key "$cache_raw"
         return 0
     fi
-    printf '%s' "$cache_raw" | cksum 2>/dev/null | awk '{print $1"-"$2}'
+    printf '%s' "$cache_raw" | proxy_cksum_cache_key
 }
 
 routing_status_cache_text_file() {
@@ -136,7 +133,7 @@ routing_status_state_fp_cache_file() {
     if declare -F proxy_runtime_cache_key >/dev/null 2>&1; then
         cache_key="$(proxy_runtime_cache_key "routing-status-state|${raw_key}")"
     else
-        cache_key="$(printf '%s' "routing-status-state|${raw_key}" | cksum 2>/dev/null | awk '{print $1"-"$2}')"
+        cache_key="$(printf '%s' "routing-status-state|${raw_key}" | proxy_cksum_cache_key)"
     fi
     printf '%s\n' "$(proxy_runtime_cache_dir)/routing-status-state-${cache_key}.cache"
 }
@@ -206,7 +203,7 @@ routing_status_state_fingerprint() {
         context_scope="$(routing_status_context_cache_scope)"
         cached_fp="$(printf '%s|%s|%s|%s|%s|%s|fast-global\n' \
             "$context_scope" "$conf_fp" "$route_db_fp" "$direct_fp" "$user_meta_meta" "$code_fp" \
-            | cksum 2>/dev/null | awk '{print $1":"$2}')"
+            | proxy_cksum_signature)"
         [[ -n "$cached_fp" ]] || cached_fp="0:0"
         ROUTING_STATUS_STATE_FP_META_CACHE["$runtime_key"]="$source_meta_key"
         ROUTING_STATUS_STATE_FP_VALUE_CACHE["$runtime_key"]="$cached_fp"
@@ -225,7 +222,7 @@ routing_status_state_fingerprint() {
     cached_fp="$(printf '%s|%s|%s|%s|%s|%s|%s|%s\n' \
         "$context_scope" "$conf_fp" "$route_db_fp" "$direct_fp" "$membership_fp" \
         "$template_fp" "$res_nodes_fp" "$code_fp" \
-        | cksum 2>/dev/null | awk '{print $1":"$2}')"
+        | proxy_cksum_signature)"
     [[ -n "$cached_fp" ]] || cached_fp="0:0"
     ROUTING_STATUS_STATE_FP_META_CACHE["$runtime_key"]="$source_meta_key"
     ROUTING_STATUS_STATE_FP_VALUE_CACHE["$runtime_key"]="$cached_fp"
