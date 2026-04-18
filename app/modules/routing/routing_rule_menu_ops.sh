@@ -112,7 +112,7 @@ routing_apply_state_change_with_spinner() {
     local success_message="${5:-已应用变更}" failure_message="${6:-应用变更失败}"
     [[ -n "$conf_file" && -f "$conf_file" ]] || return 1
 
-    if declare -F proxy_run_with_spinner >/dev/null 2>&1 && proxy_prompt_tty_available 2>/dev/null; then
+    if proxy_prompt_tty_available 2>/dev/null; then
         proxy_run_with_spinner "$spinner_message" \
             routing_apply_state_change_with_feedback "$conf_file" "$old_state" "$new_state" "$success_message" "$failure_message"
         return $?

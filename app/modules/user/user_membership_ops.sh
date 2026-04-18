@@ -91,11 +91,7 @@ proxy_user_membership_cache_fingerprint() {
         return 0
     fi
     cache_file="$(proxy_user_membership_state_fp_cache_file "$conf_file" 2>/dev/null || true)"
-    if declare -F proxy_runtime_state_read_matching_value >/dev/null 2>&1; then
-        cached_fp="$(proxy_runtime_state_read_matching_value "$cache_file" "$source_meta_key" 2>/dev/null || true)"
-    else
-        cached_fp=""
-    fi
+    cached_fp="$(proxy_runtime_state_read_matching_value "$cache_file" "$source_meta_key" 2>/dev/null || true)"
     if [[ -n "$cached_fp" ]]; then
         PROXY_USER_MEMBERSHIP_STATE_FP_SOURCE_KEY="$source_meta_key"
         PROXY_USER_MEMBERSHIP_STATE_FP_VALUE="$cached_fp"
@@ -117,11 +113,7 @@ proxy_user_membership_cache_fingerprint() {
     PROXY_USER_MEMBERSHIP_STATE_FP_VALUE="$cached_fp"
     if [[ -n "$cache_file" ]]; then
         mkdir -p "$(routing_runtime_cache_dir)" >/dev/null 2>&1 || true
-        if declare -F proxy_runtime_state_write_value >/dev/null 2>&1; then
-            proxy_runtime_state_write_value "$cache_file" "$source_meta_key" "$cached_fp" >/dev/null 2>&1 || true
-        else
-            printf '%s\t%s\n' "$source_meta_key" "$cached_fp" >"$cache_file"
-        fi
+        proxy_runtime_state_write_value "$cache_file" "$source_meta_key" "$cached_fp" >/dev/null 2>&1 || true
     fi
     printf '%s\n' "$cached_fp"
 }

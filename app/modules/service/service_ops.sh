@@ -267,15 +267,7 @@ print_service_status_line() {
 # --- protocol service overview/menu helpers (merged from protocol_service_overview_ops.sh) ---
 
 protocol_label_from_type() {
-    local proto="$1"
-    case "$proto" in
-        vless) echo "vless" ;;
-        tuic) echo "tuic" ;;
-        trojan) echo "trojan" ;;
-        anytls) echo "anytls" ;;
-        ss|shadowsocks) echo "ss" ;;
-        *) echo "$proto" ;;
-    esac
+    proxy_protocol_display_name "${1:-}"
 }
 
 protocol_overview_user_color_code() {

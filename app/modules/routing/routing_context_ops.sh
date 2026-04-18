@@ -22,21 +22,15 @@ routing_status_boolean_cache_read() {
     local cache_file="${1:-}" expected_meta="${2:-}"
     local cached_value=""
     [[ -n "$cache_file" && -n "$expected_meta" ]] || return 1
-    if declare -F proxy_runtime_state_read_matching_value >/dev/null 2>&1; then
-        cached_value="$(proxy_runtime_state_read_matching_value "$cache_file" "$expected_meta" 2>/dev/null || true)"
-        [[ -n "$cached_value" ]] || return 1
-        printf '%s\n' "$cached_value"
-        return 0
-    fi
-    return 1
+    cached_value="$(proxy_runtime_state_read_matching_value "$cache_file" "$expected_meta" 2>/dev/null || true)"
+    [[ -n "$cached_value" ]] || return 1
+    printf '%s\n' "$cached_value"
 }
 
 routing_status_boolean_cache_write() {
     local cache_file="${1:-}" expected_meta="${2:-}" value="${3:-}"
     [[ -n "$cache_file" && -n "$expected_meta" ]] || return 1
-    if declare -F proxy_runtime_state_write_value >/dev/null 2>&1; then
-        proxy_runtime_state_write_value "$cache_file" "$expected_meta" "$value" >/dev/null 2>&1 || return 1
-    fi
+    proxy_runtime_state_write_value "$cache_file" "$expected_meta" "$value" >/dev/null 2>&1 || return 1
 }
 
 routing_status_has_user_groups_fast() {
@@ -98,11 +92,7 @@ routing_status_cache_key() {
     local conf_file="${1:-}" context_scope cache_raw
     context_scope="$(routing_status_context_cache_scope)"
     cache_raw="routing-status|${context_scope}|${conf_file}"
-    if declare -F proxy_runtime_cache_key >/dev/null 2>&1; then
-        proxy_runtime_cache_key "$cache_raw"
-        return 0
-    fi
-    printf '%s' "$cache_raw" | proxy_cksum_cache_key
+    proxy_runtime_cache_key "$cache_raw"
 }
 
 routing_status_cache_text_file() {
@@ -130,11 +120,7 @@ routing_status_state_fp_runtime_key() {
 routing_status_state_fp_cache_file() {
     local conf_file="${1:-}" raw_key cache_key
     raw_key="$(routing_status_state_fp_runtime_key "$conf_file")"
-    if declare -F proxy_runtime_cache_key >/dev/null 2>&1; then
-        cache_key="$(proxy_runtime_cache_key "routing-status-state|${raw_key}")"
-    else
-        cache_key="$(printf '%s' "routing-status-state|${raw_key}" | proxy_cksum_cache_key)"
-    fi
+    cache_key="$(proxy_runtime_cache_key "routing-status-state|${raw_key}")"
     printf '%s\n' "$(proxy_runtime_cache_dir)/routing-status-state-${cache_key}.cache"
 }
 
@@ -182,11 +168,7 @@ routing_status_state_fingerprint() {
         return 0
     fi
     cache_file="$(routing_status_state_fp_cache_file "$conf_file" 2>/dev/null || true)"
-    if declare -F proxy_runtime_state_read_matching_value >/dev/null 2>&1; then
-        cached_fp="$(proxy_runtime_state_read_matching_value "$cache_file" "$source_meta_key" 2>/dev/null || true)"
-    else
-        cached_fp=""
-    fi
+    cached_fp="$(proxy_runtime_state_read_matching_value "$cache_file" "$source_meta_key" 2>/dev/null || true)"
     if [[ -n "$cached_fp" ]]; then
         ROUTING_STATUS_STATE_FP_META_CACHE["$runtime_key"]="$source_meta_key"
         ROUTING_STATUS_STATE_FP_VALUE_CACHE["$runtime_key"]="$cached_fp"
@@ -207,7 +189,7 @@ routing_status_state_fingerprint() {
         [[ -n "$cached_fp" ]] || cached_fp="0:0"
         ROUTING_STATUS_STATE_FP_META_CACHE["$runtime_key"]="$source_meta_key"
         ROUTING_STATUS_STATE_FP_VALUE_CACHE["$runtime_key"]="$cached_fp"
-        if [[ -n "$cache_file" && -n "$source_meta_key" ]] && declare -F proxy_runtime_state_write_value >/dev/null 2>&1; then
+        if [[ -n "$cache_file" && -n "$source_meta_key" ]]; then
             proxy_runtime_state_write_value "$cache_file" "$source_meta_key" "$cached_fp" >/dev/null 2>&1 || true
         fi
         printf '%s\n' "$cached_fp"
@@ -226,7 +208,7 @@ routing_status_state_fingerprint() {
     [[ -n "$cached_fp" ]] || cached_fp="0:0"
     ROUTING_STATUS_STATE_FP_META_CACHE["$runtime_key"]="$source_meta_key"
     ROUTING_STATUS_STATE_FP_VALUE_CACHE["$runtime_key"]="$cached_fp"
-    if [[ -n "$cache_file" && -n "$source_meta_key" ]] && declare -F proxy_runtime_state_write_value >/dev/null 2>&1; then
+    if [[ -n "$cache_file" && -n "$source_meta_key" ]]; then
         proxy_runtime_state_write_value "$cache_file" "$source_meta_key" "$cached_fp" >/dev/null 2>&1 || true
     fi
     printf '%s\n' "$cached_fp"

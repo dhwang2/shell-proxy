@@ -82,7 +82,7 @@ routing_prepare_target_user_selection_context() {
 
 routing_prepare_target_user_selection_context_with_spinner() {
     local conf_file="${1:-}" message="${2:-正在加载用户列表...}"
-    if declare -F proxy_run_with_spinner_fg >/dev/null 2>&1 && proxy_prompt_tty_available 2>/dev/null; then
+    if proxy_prompt_tty_available 2>/dev/null; then
         proxy_run_with_spinner_fg "$message" routing_prepare_target_user_selection_context "$conf_file"
         return $?
     fi
@@ -91,7 +91,7 @@ routing_prepare_target_user_selection_context_with_spinner() {
 
 routing_prepare_full_support_with_spinner() {
     local message="${1:-正在加载分流模块...}"
-    if declare -F proxy_run_with_spinner_fg >/dev/null 2>&1 && proxy_prompt_tty_available 2>/dev/null; then
+    if proxy_prompt_tty_available 2>/dev/null; then
         proxy_run_with_spinner_fg "$message" routing_menu_support_ensure_full_support_loaded
         return $?
     fi
@@ -99,13 +99,8 @@ routing_prepare_full_support_with_spinner() {
 }
 
 routing_menu_view_cache_key() {
-    local conf_file="${1:-}" cache_raw
-    cache_raw="routing-menu|${conf_file}"
-    if declare -F proxy_runtime_cache_key >/dev/null 2>&1; then
-        proxy_runtime_cache_key "$cache_raw"
-        return 0
-    fi
-    printf '%s' "$cache_raw" | proxy_cksum_cache_key
+    local conf_file="${1:-}"
+    proxy_runtime_cache_key "routing-menu|${conf_file}"
 }
 
 routing_menu_view_text_file() {

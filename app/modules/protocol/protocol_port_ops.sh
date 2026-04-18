@@ -41,24 +41,7 @@ inbound_port_prompt_text() {
 }
 
 common_ports_for_proto() {
-    local proto="${1:-}"
-    case "$proto" in
-        trojan|vless|anytls)
-            echo "443 2053 2083 2087 2096 8443 9443"
-            ;;
-        tuic)
-            echo ""
-            ;;
-        ss)
-            echo "443 8388 8443 9443"
-            ;;
-        snell)
-            echo "443 1443 8443 10443"
-            ;;
-        *)
-            echo ""
-            ;;
-    esac
+    printf '%s\n' "${PROXY_PROTOCOL_COMMON_PORTS[${1:-}]:-}"
 }
 
 render_compact_port_summary_with_usage() {

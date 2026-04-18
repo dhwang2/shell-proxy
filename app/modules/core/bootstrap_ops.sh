@@ -97,7 +97,7 @@ config_apply_sync() {
 
     restart_singbox_preflight "$conf_file"
 
-    if declare -F proxy_run_with_spinner >/dev/null 2>&1 && proxy_prompt_tty_available 2>/dev/null; then
+    if proxy_prompt_tty_available 2>/dev/null; then
         proxy_run_with_spinner "sing-box 重启中..." restart_singbox_service_with_check
     else
         systemctl restart sing-box && check_service_result "sing-box" "重启"
@@ -267,6 +267,21 @@ restart_singbox_if_present() {
     fi
 }
 
+declare -gA PROXY_PROTOCOL_COMMON_PORTS=(
+    [vless]="443 2053 2083 2087 2096 8443 9443"
+    [trojan]="443 2053 2083 2087 2096 8443 9443"
+    [anytls]="443 2053 2083 2087 2096 8443 9443"
+    [tuic]=""
+    [ss]="443 8388 8443 9443"
+    [snell]="443 1443 8443 10443"
+)
+
+proxy_protocol_display_name() {
+    local proto="${1:-}"
+    [[ "$proto" == "shadowsocks" ]] && proto="ss"
+    printf '%s\n' "$proto"
+}
+
 proxy_runtime_cache_dir() {
     echo "${CACHE_DIR}/runtime"
 }
@@ -418,9 +433,7 @@ update_self() {
     local rc=$?
     if (( rc == 10 )); then
         if [[ -t 0 && -t 1 && -f "$management_script" ]]; then
-            if declare -F proxy_run_with_spinner_compact >/dev/null 2>&1; then
-                proxy_run_with_spinner_compact "正在加载新脚本..." sleep 0.5
-            fi
+            proxy_run_with_spinner_compact "正在加载新脚本..." sleep 0.5
             green "脚本更新已生效，正在切换到新菜单..."
             exec bash "$management_script" menu
             red "自动切换新菜单失败，请重新执行 sproxy。"

@@ -141,14 +141,6 @@ show_status_and_logs() {
         [[ -n "$note" ]] && yellow "$note"
     }
 
-    protocol_display_name() {
-        local proto="$1"
-        case "$proto" in
-            ss|shadowsocks) echo "ss" ;;
-            *) echo "$proto" ;;
-        esac
-    }
-
     show_service_logs_by_protocol() {
         while :; do
             local choices=()
@@ -161,7 +153,7 @@ show_status_and_logs() {
                     jq -r '.inbounds[]?.type // empty' "$conf_file" 2>/dev/null \
                         | while IFS= read -r proto; do
                             [[ -n "$proto" ]] || continue
-                            protocol_display_name "$proto"
+                            proxy_protocol_display_name "$proto"
                         done \
                         | awk 'NF && !seen[$0]++' \
                         | paste -sd/ -

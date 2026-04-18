@@ -242,7 +242,7 @@ routing_test_effect_rebuild_sync_with_spinner() {
     local conf_file="${1:-}" target_name="${2:-}"
     [[ -n "$conf_file" && -f "$conf_file" ]] || return 1
 
-    if declare -F proxy_run_with_spinner_compact >/dev/null 2>&1 && proxy_prompt_tty_available 2>/dev/null; then
+    if proxy_prompt_tty_available 2>/dev/null; then
         if [[ -n "$target_name" ]]; then
             proxy_run_with_spinner_compact "正在探测分流出口..." \
                 routing_with_user_context "$target_name" routing_test_effect_cache_rebuild "$conf_file"

@@ -304,7 +304,7 @@ modify_singbox_inbounds_logic() {
             return 0
         }
 
-        if declare -F proxy_run_with_spinner_compact >/dev/null 2>&1 && proxy_prompt_tty_available 2>/dev/null; then
+        if proxy_prompt_tty_available 2>/dev/null; then
             protocol_install_apply_new_inbound_change_with_spinner() {
                 protocol_install_apply_new_inbound_change
             }
@@ -804,12 +804,7 @@ protocol_install_session_flush_now() {
         return 1
     fi
 
-    if declare -F proxy_run_with_spinner_fg >/dev/null 2>&1; then
-        proxy_run_with_spinner_fg "正在应用新配置文件..." _protocol_install_session_flush_inner
-    else
-        yellow "正在应用新配置文件..."
-        _protocol_install_session_flush_inner
-    fi
+    proxy_run_with_spinner_fg "正在应用新配置文件..." _protocol_install_session_flush_inner
 
     PROTOCOL_INSTALL_PENDING_SINGBOX_RESTART=0
     PROTOCOL_INSTALL_PENDING_SNELL_RESTART=0
@@ -1055,7 +1050,7 @@ proxy_append_user_to_existing_inbound() {
         protocol_install_apply_singbox_change
     }
 
-    if declare -F proxy_run_with_spinner_compact >/dev/null 2>&1 && proxy_prompt_tty_available 2>/dev/null; then
+    if proxy_prompt_tty_available 2>/dev/null; then
         proxy_run_with_spinner_compact "正在写入复用配置..." protocol_append_existing_user_apply_change || return 1
     else
         protocol_append_existing_user_apply_change || return 1
@@ -1323,7 +1318,7 @@ EOF
         fi
     }
 
-    if declare -F proxy_run_with_spinner_compact >/dev/null 2>&1 && proxy_prompt_tty_available 2>/dev/null; then
+    if proxy_prompt_tty_available 2>/dev/null; then
         proxy_run_with_spinner_compact "正在写入 snell 配置..." protocol_install_finalize_snell_config || {
             red "snell-v5 配置写入失败"
             return

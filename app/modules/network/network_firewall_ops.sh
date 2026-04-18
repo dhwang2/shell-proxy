@@ -89,10 +89,7 @@ network_firewall_custom_ports_rows() {
         | while IFS=$'\t' read -r proto port; do
             [[ "$port" =~ ^[0-9]+$ ]] || continue
             (( port >= 1 && port <= 65535 )) || continue
-            case "$proto" in
-                udp) proto="udp" ;;
-                *) proto="tcp" ;;
-            esac
+            [[ "$proto" == "udp" ]] || proto="tcp"
             printf '%s\t%s\n' "$proto" "$port"
         done \
         | LC_ALL=C sort -t $'\t' -k2,2n -k1,1 -u

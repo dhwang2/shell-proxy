@@ -912,6 +912,13 @@ routing_user_template_conf_managed_rules_fingerprint() {
 }
 
 sync_user_template_route_rules() {
+    # Fast-path cache chain — 5 successively expensive checks, each short-circuiting
+    # when it can prove no config mutation is needed:
+    #   L1 fast_state       : file-based marker (stat + read), cheapest
+    #   L2 applied_state    : composite of sync_input_fp + conf_managed_fp + route_db_fp
+    #   L3 fingerprint_triple : old/new rules_fp + dns_fp + conf_managed_fp all agree (from meta cache)
+    #   L4 dns_sync_skip    : same as L3 but after JSON reload populates missing fingerprints
+    #   L5 cmp_content      : byte-level diff of rebuilt config vs current file
     local conf_file="${1:-}"
     local sanitize_mode="${2:-}"
     local active_auth_users_json="[]"
@@ -924,6 +931,7 @@ sync_user_template_route_rules() {
         orphan_auth_user_rules_present=1
     fi
 
+    # L1 fast_state: marker file is fresh and no orphans → nothing to do.
     local fast_state_key=""
     fast_state_key="$(routing_user_template_route_fast_state_key "$conf_file" 2>/dev/null || true)"
     if [[ -n "$fast_state_key" ]] \
@@ -985,6 +993,7 @@ sync_user_template_route_rules() {
         routing_user_template_route_template_map_mark_fresh "$meta_template_map_fp" >/dev/null 2>&1 || true
     fi
 
+    # L2 applied_state: composite fingerprint matches previous successful apply.
     local sync_input_fp conf_managed_fp_before expected_apply_state cached_apply_state
     sync_input_fp="$(routing_user_template_route_sync_input_fingerprint "$conf_file" 2>/dev/null || echo "0:0")"
     [[ -n "$sync_input_fp" ]] || sync_input_fp="0:0"
@@ -1014,6 +1023,7 @@ sync_user_template_route_rules() {
         IFS="$ROUTING_USER_TEMPLATE_ROUTE_META_SEP" read -r new_rules_fp new_rules_dns_fp <<<"$compiled_rules_meta_fields"
     fi
 
+    # L3 fingerprint_triple: rules_fp + dns_fp + conf_managed_fp all agree (meta cache hit).
     conf_managed_fp="$conf_managed_fp_before"
     if [[ -n "$old_rules_fp" && -n "$old_rules_dns_fp" && -n "$new_rules_fp" && -n "$new_rules_dns_fp" ]] \
         && [[ "$old_rules_dns_fp" == "$new_rules_dns_fp" ]] \
@@ -1085,6 +1095,7 @@ sync_user_template_route_rules() {
         need_dns_sync=1
     fi
 
+    # L4 dns_sync_skip: after JSON reload populates missing fingerprints, same triple holds.
     if (( need_dns_sync == 0 )) \
         && [[ -n "$old_rules_fp" && -n "$new_rules_fp" && "$old_rules_fp" == "$new_rules_fp" ]] \
         && [[ -n "$conf_managed_fp" && "$conf_managed_fp" == "$new_rules_fp" ]]; then
@@ -1146,6 +1157,7 @@ sync_user_template_route_rules() {
         return 1
     fi
 
+    # L5 cmp_content: byte-level diff of rebuilt config vs current file.
     if ! cmp -s "$tmp_conf" "$conf_file"; then
         backup_conf_file "$conf_file"
         mv "$tmp_conf" "$conf_file"

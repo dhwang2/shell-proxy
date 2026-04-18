@@ -269,7 +269,7 @@ protocol_remove_apply_changes_with_spinner() {
     local conf_file="${1:-}" conf_changed="${2:-0}" route_sync_needed="${3:-0}" shadowtls_service_list="${4:-}"
     [[ -n "$conf_file" && -f "$conf_file" ]] || return 1
 
-    if declare -F proxy_run_with_spinner >/dev/null 2>&1 && proxy_prompt_tty_available 2>/dev/null; then
+    if proxy_prompt_tty_available 2>/dev/null; then
         proxy_run_with_spinner "正在应用协议卸载变更..." \
             protocol_remove_apply_changes_with_feedback "$conf_file" "$conf_changed" "$route_sync_needed" "$shadowtls_service_list"
         return $?
