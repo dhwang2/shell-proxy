@@ -227,27 +227,20 @@ routing_apply_direct_mode_to_conf() {
     backup_conf_file "$conf_file"
     local tmp_json
     tmp_json="$(mktemp)"
-    if [[ "$mode" == "as_is" ]]; then
-        jq --arg tag "🐸 direct" '
-            .outbounds |= map(
-                if .tag == $tag then
-                    del(.domain_strategy)
-                    | (
-                        if ((.domain_resolver? // null) | type) == "object" then
-                            .domain_resolver |= del(.strategy)
-                        else
-                            .
-                        end
-                      )
-                else
-                    .
-                end
-            )
-        ' "$conf_file" > "$tmp_json" 2>/dev/null || true
-    else
-        jq --arg tag "🐸 direct" --arg mode "$mode" --arg default_dns_tag "$default_dns_tag" '
-            .outbounds |= map(
-                if .tag == $tag then
+    # Both modes share: del(.domain_strategy) on the 🐸 direct outbound.
+    # - as_is: also strips domain_resolver.strategy if resolver is an object.
+    # - other: materializes domain_resolver to an object and sets strategy=$mode.
+    jq --arg tag "🐸 direct" --arg mode "$mode" --arg default_dns_tag "$default_dns_tag" '
+        .outbounds |= map(
+            if .tag == $tag then
+                del(.domain_strategy)
+                | if $mode == "as_is" then
+                    if ((.domain_resolver? // null) | type) == "object" then
+                        .domain_resolver |= del(.strategy)
+                    else
+                        .
+                    end
+                  else
                     .domain_resolver = (
                         if ((.domain_resolver? // null) | type) == "object" then
                             .domain_resolver
@@ -259,13 +252,12 @@ routing_apply_direct_mode_to_conf() {
                     )
                     | .domain_resolver.server = (.domain_resolver.server // $default_dns_tag)
                     | .domain_resolver.strategy = $mode
-                    | del(.domain_strategy)
-                else
-                    .
-                end
-            )
-        ' "$conf_file" > "$tmp_json" 2>/dev/null || true
-    fi
+                  end
+            else
+                .
+            end
+        )
+    ' "$conf_file" > "$tmp_json" 2>/dev/null || true
 
     if [[ -s "$tmp_json" ]]; then
         mv "$tmp_json" "$conf_file"
